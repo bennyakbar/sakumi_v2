@@ -1,0 +1,37 @@
+schema: spec-driven
+
+context: |
+  Domain: School Financial Management System (Sistem Keuangan Madrasah Ibtidaiyah/SD)
+  Tech stack: Laravel 11.x LTS, PHP 8.2+, PostgreSQL 15+, Blade Templates, Tailwind CSS 3.x, Alpine.js 3.x, Chart.js 4.x
+  Key packages: spatie/laravel-permission ^6.0, barryvdh/laravel-dompdf ^3.0, maatwebsite/excel ^3.1, spatie/laravel-backup ^9.0, spatie/laravel-activitylog ^4.8, laravel/breeze ^2.0
+  Architecture: Laravel monolith with layered architecture (Controllers → Services → Events/Listeners), Eloquent ORM, PostgreSQL database queue
+  Environments: local (sync queue), staging (db queue, sandbox WhatsApp), production (db queue, real WhatsApp)
+  Build strategy: Core-first phased rollout — Wave 1 (Core Go-Live, Weeks 1-8) then Wave 2 (Enhancement, Weeks 9-12)
+  Key constraints:
+    - Financial immutability: transactions cannot be edited/deleted, corrections via cancel + replacement
+    - Concurrency-safe numbering via pessimistic locking (lockForUpdate)
+    - DB trigger protects 6 fields on completed transactions (IS DISTINCT FROM, null-safe)
+    - Idempotent monthly obligation generation (upsert with unique composite key)
+    - After-commit side effects for PDF + notifications (DB::afterCommit)
+    - Two DB roles: app_runtime (DML only) and app_migrator (DDL, CI/CD only)
+    - Split health endpoints: GET /health/live (public) and GET /health (authenticated)
+    - API keys in .env only (not DB)
+    - 5 RBAC roles: super_admin, bendahara, kepala_sekolah, operator_tu, auditor
+  Reference docs: proposal.md, design.md, openspec/SISTEM_KEUANGAN_SEKOLAH.md (v2.1)
+
+rules:
+  proposal:
+    - Reference existing proposal.md and design.md — do not reinvent, refine for the specific change scope
+    - Keep proposals focused on a single wave or module boundary
+  specs:
+    - Each spec must map to a module from design.md sections 4.x
+    - Include DB schema (tables, columns, types, constraints), service methods, routes, middleware, and validation rules
+    - Reference spec section numbers from SISTEM_KEUANGAN_SEKOLAH.md
+  design:
+    - Reference the existing design.md for architecture — focus on module-specific implementation details
+    - Include file paths following the component structure in design.md section 3.2
+  tasks:
+    - Break tasks into chunks of max 2 hours of implementation work
+    - Group tasks by layer: migrations → models → services → controllers → views → tests
+    - Each task must be independently testable
+    - Include test tasks (unit + feature) for each module
