@@ -21,6 +21,76 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Quick Start
+
+### 1) Setup
+
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+```
+
+### 2) Run
+
+Option A (recommended helper script):
+
+```bash
+./start.sh
+```
+
+Option B (manual):
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8001
+npm run dev
+```
+
+App URL: `http://127.0.0.1:8001`
+
+### 3) Login
+
+Login yang dipastikan aktif:
+
+- Super Admin
+  - Email: `admin@sakumi.com`
+  - Password: `password`
+
+### 4) Troubleshooting
+
+- Port `8001` already used:
+  - Stop existing process: `./stop.sh`
+  - Or run manual server on another port:
+    `php artisan serve --host=127.0.0.1 --port=8002`
+- Frontend assets not loading:
+  - Ensure Vite is running: `npm run dev`
+  - Reinstall packages if needed: `npm install`
+- Database / migration errors:
+  - Check `.env` DB settings
+  - Jalankan non-destruktif: `php artisan migrate` lalu `php artisan db:seed`
+  - Jangan gunakan `php artisan migrate:fresh --seed` pada DB yang sudah berisi data entry (command ini menghapus semua tabel/data)
+- Permission/cache oddities:
+  - Clear Laravel cache: `php artisan optimize:clear`
+
+### 5) Security (OWASP ZAP)
+
+This repository includes an OWASP ZAP baseline scan workflow:
+
+- Workflow file: `.github/workflows/zap-baseline.yml`
+- Triggers: pull requests, manual dispatch, and weekly schedule
+- Target: local app at `http://127.0.0.1:8000`
+- Reports: uploaded as `zap-baseline-report` artifact (`html`, `json`, `xml`, `md`)
+- Gate: workflow fails if any **Medium** or **High** risk alerts are detected
+- Pull requests: posts an automatic comment with Medium/High alert counts
+
+To run it manually from GitHub UI:
+
+1. Open **Actions** → **OWASP ZAP Baseline**
+2. Click **Run workflow**
+3. Open run artifacts and download `zap-baseline-report`
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

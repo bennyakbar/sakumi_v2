@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,20 +15,25 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
         ]);
 
-        // Create default Super Admin user
-        $admin = User::factory()->create([
-            'name' => 'Super Admin',
-            'email' => 'admin@sakumi.test',
-            'is_active' => true,
-        ]);
-        $admin->assignRole('super_admin');
+        // Ensure demo users always exist and credentials are reset on every seed.
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@sakumi.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $admin->syncRoles(['super_admin']);
 
-        // Create demo Bendahara user
-        $bendahara = User::factory()->create([
-            'name' => 'Bendahara',
-            'email' => 'bendahara@sakumi.test',
-            'is_active' => true,
-        ]);
-        $bendahara->assignRole('bendahara');
+        $bendahara = User::updateOrCreate(
+            ['email' => 'bendahara@sakumi.com'],
+            [
+                'name' => 'Bendahara',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $bendahara->syncRoles(['bendahara']);
     }
 }
