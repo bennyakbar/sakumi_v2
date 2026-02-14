@@ -52,11 +52,35 @@ App URL: `http://127.0.0.1:8001`
 
 ### 3) Login
 
-Login yang dipastikan aktif:
+Login yang dipastikan aktif (seeded by `FixedLoginSeeder`):
 
-- Super Admin
-  - Email: `admin@sakumi.com`
-  - Password: `password`
+- **Admin TU**
+  - Email: `admin.tu@sakumi.local`
+  - Password: `AdminTU#2026`
+  - Roles: `admin_tu`, `super_admin`
+
+- **Staff**
+  - Email: `staff@sakumi.local`
+  - Password: `Staff#2026`
+  - Roles: `staff`, `operator_tu`
+
+- **Bendahara**
+  - Email: `bendahara@sakumi.local`
+  - Password: `Bendahara#2026`
+  - Roles: `bendahara`
+
+- **Kepala Sekolah**
+  - Email: `kepala.sekolah@sakumi.local`
+  - Password: `KepalaSekolah#2026`
+  - Roles: `kepala_sekolah`
+
+Jika akun belum ada/tertimpa, jalankan:
+
+```bash
+php artisan db:seed --class=RolePermissionSeeder
+php artisan db:seed --class=FixedLoginSeeder
+php artisan permission:cache-reset
+```
 
 ### 4) Troubleshooting
 

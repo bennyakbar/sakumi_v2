@@ -24,6 +24,10 @@ class RolePermissionSeeder extends Seeder
             'transactions.view', 'transactions.create', 'transactions.cancel',
             // Receipts
             'receipts.view', 'receipts.print', 'receipts.reprint',
+            // Invoices
+            'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
+            // Settlements
+            'settlements.view', 'settlements.create', 'settlements.cancel',
             // Reports
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
             // Dashboard
@@ -50,7 +54,7 @@ class RolePermissionSeeder extends Seeder
         $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
         $superAdmin->syncPermissions(Permission::all());
 
-        // Bendahara — transactions, receipts, reports, fee matrix
+        // Bendahara — financial operations + reporting
         $bendahara = Role::firstOrCreate(['name' => 'bendahara']);
         $bendahara->syncPermissions([
             'dashboard.view',
@@ -61,10 +65,15 @@ class RolePermissionSeeder extends Seeder
             'master.categories.view',
             'transactions.view', 'transactions.create', 'transactions.cancel',
             'receipts.view', 'receipts.print', 'receipts.reprint',
+            'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
+            'settlements.view', 'settlements.create', 'settlements.cancel',
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
+            'users.view',
+            'settings.view',
+            'audit.view',
         ]);
 
-        // Kepala Sekolah — view-only dashboard, students, transactions, reports
+        // Kepala Sekolah — view-only + reporting
         $kepalaSekolah = Role::firstOrCreate(['name' => 'kepala_sekolah']);
         $kepalaSekolah->syncPermissions([
             'dashboard.view',
@@ -75,10 +84,15 @@ class RolePermissionSeeder extends Seeder
             'master.fee-matrix.view',
             'transactions.view',
             'receipts.view',
+            'invoices.view', 'invoices.print',
+            'settlements.view',
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
+            'users.view',
+            'settings.view',
+            'audit.view',
         ]);
 
-        // Operator TU — students, classes, view transactions/reports
+        // Operator TU — operations (master data + create financial docs, no cancel)
         $operatorTu = Role::firstOrCreate(['name' => 'operator_tu']);
         $operatorTu->syncPermissions([
             'dashboard.view',
@@ -88,9 +102,13 @@ class RolePermissionSeeder extends Seeder
             'master.categories.view', 'master.categories.create', 'master.categories.edit', 'master.categories.delete',
             'master.fee-types.view',
             'master.fee-matrix.view',
-            'transactions.view',
-            'receipts.view',
+            'transactions.view', 'transactions.create',
+            'receipts.view', 'receipts.print',
+            'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print',
+            'settlements.view', 'settlements.create',
             'reports.daily', 'reports.monthly', 'reports.arrears',
+            'users.view',
+            'settings.view',
         ]);
 
         // Auditor — view-only all data, audit log
@@ -104,6 +122,8 @@ class RolePermissionSeeder extends Seeder
             'master.fee-matrix.view',
             'transactions.view',
             'receipts.view',
+            'invoices.view', 'invoices.print',
+            'settlements.view',
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
             'audit.view',
         ]);
