@@ -24,6 +24,19 @@
                         @endif
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Transaction Type -->
+                            <div>
+                                <x-input-label for="type" :value="__('Transaction Type')" />
+                                <select id="type" name="type"
+                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
+                                    required onchange="toggleTransactionType()">
+                                    <option value="income" {{ old('type', 'income') === 'income' ? 'selected' : '' }}>Income</option>
+                                    @if($canCreateExpense)
+                                        <option value="expense" {{ old('type') === 'expense' ? 'selected' : '' }}>Expense</option>
+                                    @endif
+                                </select>
+                            </div>
+
                             <!-- Date -->
                             <div>
                                 <x-input-label for="transaction_date" :value="__('Transaction Date')" />
@@ -32,7 +45,7 @@
                             </div>
 
                             <!-- Student -->
-                            <div>
+                            <div id="student-field-wrapper">
                                 <x-input-label for="student_id" :value="__('Student')" />
                                 <select id="student_id" name="student_id"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
@@ -95,8 +108,8 @@
                                 class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-2">
                                 {{ __('Cancel') }}
                             </a>
-                            <x-primary-button>
-                                {{ __('Process Payment') }}
+                            <x-primary-button id="submit-label">
+                                {{ __('Process Transaction') }}
                             </x-primary-button>
                         </div>
                     </form>
@@ -162,5 +175,30 @@
 
         // Add first row by default
         addItem();
+
+        function toggleTransactionType() {
+            const typeSelect = document.getElementById('type');
+            const studentWrapper = document.getElementById('student-field-wrapper');
+            const studentSelect = document.getElementById('student_id');
+            const submitLabel = document.getElementById('submit-label');
+            const isExpense = typeSelect && typeSelect.value === 'expense';
+
+            if (studentWrapper) {
+                studentWrapper.style.display = isExpense ? 'none' : '';
+            }
+
+            if (studentSelect) {
+                studentSelect.required = !isExpense;
+                if (isExpense) {
+                    studentSelect.value = '';
+                }
+            }
+
+            if (submitLabel) {
+                submitLabel.textContent = isExpense ? 'Process Expense' : 'Process Income';
+            }
+        }
+
+        toggleTransactionType();
     </script>
 </x-app-layout>

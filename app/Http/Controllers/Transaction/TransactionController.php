@@ -74,8 +74,9 @@ class TransactionController extends Controller
     {
         $students = Student::with('schoolClass')->where('status', 'active')->get();
         $feeTypes = FeeType::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $canCreateExpense = auth()->user()?->can('transactions.expense.create') ?? false;
 
-        return view('transactions.create', compact('students', 'feeTypes'));
+        return view('transactions.create', compact('students', 'feeTypes', 'canCreateExpense'));
     }
 
     /**
@@ -84,9 +85,23 @@ class TransactionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $unitId = session('current_unit_id');
+        $transactionType = (string) $request->input('type', 'income');
+
+        if (! in_array($transactionType, ['income', 'expense'], true)) {
+            return back()->withInput()->withErrors(['type' => 'Invalid transaction type.']);
+        }
+
+        if ($transactionType === 'expense' && ! (auth()->user()?->can('transactions.expense.create'))) {
+            abort(403, 'You are not authorized to create expense transactions.');
+        }
 
         $validated = $request->validate([
-            'student_id' => ['required', Rule::exists('students', 'id')->where('unit_id', $unitId)],
+            'type' => 'nullable|in:income,expense',
+            'student_id' => [
+                Rule::requiredIf($transactionType === 'income'),
+                'nullable',
+                Rule::exists('students', 'id')->where('unit_id', $unitId),
+            ],
             'transaction_date' => 'required|date',
             'payment_method' => 'required|in:cash,transfer,qris',
             'description' => 'nullable|string',
@@ -97,22 +112,34 @@ class TransactionController extends Controller
         ]);
 
         try {
-            $transaction = $this->transactionService->createIncome(
-                data: [
-                    'student_id' => (int) $validated['student_id'],
-                    'transaction_date' => $validated['transaction_date'],
-                    'payment_method' => $validated['payment_method'],
-                    'description' => $validated['description'] ?? null,
-                ],
-                items: collect($validated['items'])
-                    ->values()
-                    ->map(fn (array $item): array => [
-                        'fee_type_id' => (int) $item['fee_type_id'],
-                        'amount' => (float) $item['amount'],
-                        'description' => $item['description'] ?? null,
-                    ])->all(),
-                userId: (int) auth()->id(),
-            );
+            $items = collect($validated['items'])
+                ->values()
+                ->map(fn (array $item): array => [
+                    'fee_type_id' => (int) $item['fee_type_id'],
+                    'amount' => (float) $item['amount'],
+                    'description' => $item['description'] ?? null,
+                ])->all();
+
+            $transaction = $transactionType === 'expense'
+                ? $this->transactionService->createExpense(
+                    data: [
+                        'transaction_date' => $validated['transaction_date'],
+                        'payment_method' => $validated['payment_method'],
+                        'description' => $validated['description'] ?? null,
+                    ],
+                    items: $items,
+                    userId: (int) auth()->id(),
+                )
+                : $this->transactionService->createIncome(
+                    data: [
+                        'student_id' => (int) $validated['student_id'],
+                        'transaction_date' => $validated['transaction_date'],
+                        'payment_method' => $validated['payment_method'],
+                        'description' => $validated['description'] ?? null,
+                    ],
+                    items: $items,
+                    userId: (int) auth()->id(),
+                );
 
             return redirect()->route('transactions.show', $transaction)
                 ->with('success', 'Transaction created successfully. Number: ' . $transaction->transaction_number);
