@@ -16,7 +16,18 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => (function () {
+        // PHPUnit uses in-memory sqlite — bypass mode system
+        if (env('APP_ENV') === 'testing' && env('DB_CONNECTION') === 'sqlite') {
+            return 'sqlite';
+        }
+
+        return match (env('DB_SAKUMI_MODE')) {
+            'dummy' => 'sakumi_dummy',
+            'real'  => 'sakumi_real',
+            default => env('DB_CONNECTION', 'sqlite'), // boot guard will crash if invalid
+        };
+    })(),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,6 +101,39 @@ return [
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
+        /*
+        |--------------------------------------------------------------
+        | Sakumi Isolated Connections
+        |--------------------------------------------------------------
+        | These connections are selected by DB_SAKUMI_MODE (dummy|real).
+        | The app will crash if DB_SAKUMI_MODE is not explicitly set.
+        */
+
+        'sakumi_dummy' => [
+            'driver' => 'sqlite',
+            'database' => database_path('sakumi_dummy.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+        ],
+
+        'sakumi_real' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_REAL_DATABASE', 'sakumi_real'),
+            'username' => env('DB_REAL_USERNAME', 'sakumi'),
+            'password' => env('DB_REAL_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,

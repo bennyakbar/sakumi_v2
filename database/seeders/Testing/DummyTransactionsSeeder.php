@@ -24,10 +24,13 @@ class DummyTransactionsSeeder extends TestingSeeder
             throw new \RuntimeException('Reference data for transactions is missing.');
         }
 
+        $unitId = session('current_unit_id');
+
         Transaction::factory()
             ->count(1000)
             ->state(new Sequence(
                 fn () => [
+                    'unit_id' => $unitId,
                     'student_id' => $studentIds[array_rand($studentIds)],
                     'account_id' => $accountIds[array_rand($accountIds)],
                     'category_id' => $categoryIds[array_rand($categoryIds)],

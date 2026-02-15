@@ -13,8 +13,8 @@ Usage:
   ./scripts/switch-env.sh real
 
 Required files:
-  .env.dummy  (APP_ENV should be testing or local)
-  .env.real   (APP_ENV should be production)
+  .env.dummy  (APP_ENV=testing|local, DB_SAKUMI_MODE=dummy)
+  .env.real   (APP_ENV=production,    DB_SAKUMI_MODE=real)
 EOF
 }
 
@@ -60,6 +60,7 @@ fi
 
 cp "$SOURCE_ENV" "$ENV_FILE"
 
+# ── Validate APP_ENV ──
 NEW_ENV="$(grep -E '^APP_ENV=' "$ENV_FILE" | head -n1 | cut -d'=' -f2 | tr -d '"' || true)"
 
 if [[ "$TARGET" == "dummy" ]]; then
@@ -74,10 +75,52 @@ if [[ "$TARGET" == "real" && "$NEW_ENV" != "production" ]]; then
   exit 1
 fi
 
+# ── Validate DB_SAKUMI_MODE ──
+NEW_MODE="$(grep -E '^DB_SAKUMI_MODE=' "$ENV_FILE" | head -n1 | cut -d'=' -f2 | tr -d '"' || true)"
+
+if [[ "$NEW_MODE" != "$TARGET" ]]; then
+  echo "Safety check failed: DB_SAKUMI_MODE=$NEW_MODE does not match target=$TARGET"
+  exit 1
+fi
+
+# ── Clear Laravel caches ──
 (
   cd "$ROOT_DIR"
   php artisan config:clear >/dev/null 2>&1 || true
   php artisan cache:clear >/dev/null 2>&1 || true
 )
 
-echo "Switched to $TARGET environment (APP_ENV=$NEW_ENV)."
+echo "Switched to $TARGET environment (APP_ENV=$NEW_ENV, DB_SAKUMI_MODE=$NEW_MODE)."
+
+# ── Auto-migrate and seed for dummy mode ──
+if [[ "$TARGET" == "dummy" ]]; then
+  echo ""
+  echo "Initializing dummy database..."
+
+  DUMMY_DB="$ROOT_DIR/database/sakumi_dummy.sqlite"
+  if [[ ! -f "$DUMMY_DB" ]]; then
+    touch "$DUMMY_DB"
+    echo "Created: $DUMMY_DB"
+  fi
+
+  (
+    cd "$ROOT_DIR"
+
+    echo "Running migrations..."
+    php artisan migrate --force --no-interaction
+    if [[ $? -ne 0 ]]; then
+      echo "Migration failed!"
+      exit 1
+    fi
+
+    echo "Running dummy seeders..."
+    php artisan db:seed --class='Database\Seeders\Testing\DummyDatabaseSeeder' --force --no-interaction
+    if [[ $? -ne 0 ]]; then
+      echo "Seeding failed!"
+      exit 1
+    fi
+  )
+
+  echo ""
+  echo "Dummy database ready."
+fi

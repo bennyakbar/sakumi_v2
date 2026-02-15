@@ -20,10 +20,13 @@ class DummyStudentsSeeder extends TestingSeeder
             throw new \RuntimeException('Reference data for students is missing.');
         }
 
+        $unitId = session('current_unit_id');
+
         Student::factory()
             ->count(200)
             ->state(new Sequence(
                 fn () => [
+                    'unit_id' => $unitId,
                     'class_id' => $classIds[array_rand($classIds)],
                     'category_id' => $categoryIds[array_rand($categoryIds)],
                 ]

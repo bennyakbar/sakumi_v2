@@ -21,6 +21,21 @@ class InitDummyDatabase extends Command
             return self::FAILURE;
         }
 
+        $sakumiMode = env('DB_SAKUMI_MODE');
+        if ($sakumiMode !== 'dummy') {
+            $this->error('Safety check failed: DB_SAKUMI_MODE must be "dummy".');
+            $this->error('Current value: '.var_export($sakumiMode, true));
+
+            return self::FAILURE;
+        }
+
+        // Ensure SQLite file exists
+        $dbPath = database_path('sakumi_dummy.sqlite');
+        if (! file_exists($dbPath)) {
+            touch($dbPath);
+            $this->info('Created SQLite file: '.$dbPath);
+        }
+
         $requiredTables = [
             'units',
             'users',

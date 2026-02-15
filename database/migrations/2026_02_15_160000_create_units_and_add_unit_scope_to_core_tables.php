@@ -41,9 +41,9 @@ return new class extends Migration
 
         // 2. Seed units with deterministic IDs
         DB::table('units')->insert([
-            ['id' => 1, 'code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'code' => 'RA', 'name' => 'Raudhatul Athfal', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'code' => 'DTA', 'name' => 'Diniyah Takmiliyah Awaliyah', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1, 'code' => 'MI', 'name' => 'Madrasah Ibtidaiyah (MI)', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'code' => 'RA', 'name' => 'Raudhatul Athfal (RA)', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'code' => 'DTA', 'name' => 'Diniyah Takmiliyah Awaliyah (DTA)', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // 3. Add unit_id: nullable → backfill MI → NOT NULL + FK (restrictOnDelete) + index

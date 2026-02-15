@@ -10,6 +10,8 @@ class DummyUsersSeeder extends TestingSeeder
     {
         $this->ensureTestingEnvironment();
 
-        User::factory()->count(10)->create();
+        $unitId = session('current_unit_id');
+
+        User::factory()->count(10)->state(['unit_id' => $unitId])->create();
     }
 }

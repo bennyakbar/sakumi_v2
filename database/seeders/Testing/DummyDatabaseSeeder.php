@@ -2,6 +2,10 @@
 
 namespace Database\Seeders\Testing;
 
+use Database\Seeders\FixedLoginSeeder;
+use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\UnitSeeder;
+
 class DummyDatabaseSeeder extends TestingSeeder
 {
     public function run(): void
@@ -9,6 +13,9 @@ class DummyDatabaseSeeder extends TestingSeeder
         $this->ensureTestingEnvironment();
 
         $this->call([
+            UnitSeeder::class,
+            RolePermissionSeeder::class,
+            FixedLoginSeeder::class,
             DummyReferenceSeeder::class,
             DummyUsersSeeder::class,
             DummyStudentsSeeder::class,

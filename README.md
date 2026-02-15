@@ -119,6 +119,32 @@ php artisan db:seed --class=FixedLoginSeeder
 php artisan permission:cache-reset
 ```
 
+### Login Recovery (Dummy/Testing)
+
+Jika muncul error `These credentials do not match our records.` untuk akun fixed login, jalankan recovery berikut:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\UnitSeeder
+php artisan db:seed --class=Database\\Seeders\\RolePermissionSeeder
+php artisan db:seed --class=Database\\Seeders\\FixedLoginSeeder
+php artisan permission:cache-reset
+```
+
+Kredensial default setelah recovery:
+
+- **Admin TU**
+  - Email: `admin.tu@sakumi.local`
+  - Password: `AdminTU#2026`
+- **Staff**
+  - Email: `staff@sakumi.local`
+  - Password: `Staff#2026`
+- **Bendahara**
+  - Email: `bendahara@sakumi.local`
+  - Password: `Bendahara#2026`
+- **Kepala Sekolah**
+  - Email: `kepala.sekolah@sakumi.local`
+  - Password: `KepalaSekolah#2026`
+
 ### 4) Troubleshooting
 
 - Port `8001` already used:
