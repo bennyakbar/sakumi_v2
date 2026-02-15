@@ -57,11 +57,13 @@ Route::middleware('auth')->group(function () {
     });
 
     // Transactions
-    Route::resource('transactions', \App\Http\Controllers\Transaction\TransactionController::class);
-    Route::get('/receipts/{transaction}/print', [\App\Http\Controllers\ReceiptController::class, 'print'])->name('receipts.print');
+    Route::middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+        Route::resource('transactions', \App\Http\Controllers\Transaction\TransactionController::class);
+        Route::get('/receipts/{transaction}/print', [\App\Http\Controllers\ReceiptController::class, 'print'])->name('receipts.print');
+    });
 
     // Invoices
-    Route::prefix('invoices')->name('invoices.')->group(function () {
+    Route::prefix('invoices')->name('invoices.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/', [\App\Http\Controllers\Invoice\InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Invoice\InvoiceController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Invoice\InvoiceController::class, 'store'])->name('store');
@@ -73,7 +75,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Settlements
-    Route::prefix('settlements')->name('settlements.')->group(function () {
+    Route::prefix('settlements')->name('settlements.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/', [\App\Http\Controllers\Settlement\SettlementController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Settlement\SettlementController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Settlement\SettlementController::class, 'store'])->name('store');
@@ -82,7 +84,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Reports
-    Route::prefix('reports')->name('reports.')->group(function () {
+    Route::prefix('reports')->name('reports.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/daily', [\App\Http\Controllers\Report\ReportController::class, 'daily'])->name('daily');
         Route::get('/monthly', [\App\Http\Controllers\Report\ReportController::class, 'monthly'])->name('monthly');
         Route::get('/arrears', [\App\Http\Controllers\Report\ReportController::class, 'arrears'])->name('arrears');

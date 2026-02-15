@@ -9,6 +9,7 @@ use App\Models\StudentCategory;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\ReceiptService;
+use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\UnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
@@ -22,11 +23,13 @@ class TransactionFlowTest extends TestCase
     {
         parent::setUp();
         $this->seed(UnitSeeder::class);
+        $this->seed(RolePermissionSeeder::class);
     }
 
     public function test_user_can_create_income_transaction_with_multiple_items(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('bendahara');
         $this->actingAs($user);
         session(['current_unit_id' => $user->unit_id]);
 
@@ -101,6 +104,7 @@ class TransactionFlowTest extends TestCase
     public function test_receipt_print_page_uses_a5_landscape_layout_with_signature_block(): void
     {
         $user = User::factory()->create(['name' => 'Admin TU']);
+        $user->assignRole('bendahara');
         $this->actingAs($user);
         session(['current_unit_id' => $user->unit_id]);
 

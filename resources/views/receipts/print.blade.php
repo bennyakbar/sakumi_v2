@@ -333,7 +333,7 @@
 
             <div class="head-center">
                 <div class="name">{{ $schoolName }}</div>
-                <div class="address">{!! strip_tags($schoolAddress, '<br>') !!}</div>
+                <div class="address">{!! nl2br(e($schoolAddress)) !!}</div>
                 <h1 class="doc-title">RECEIPT PEMBAYARAN</h1>
             </div>
 

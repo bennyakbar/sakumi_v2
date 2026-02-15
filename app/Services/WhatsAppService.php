@@ -60,7 +60,19 @@ class WhatsAppService
                 throw new \RuntimeException('WhatsApp gateway not configured.');
             }
 
-            $response = Http::withHeaders([
+            $parsed = parse_url($gatewayUrl);
+            if (
+                !$parsed
+                || !in_array($parsed['scheme'] ?? '', ['https'], true)
+                || empty($parsed['host'])
+                || in_array($parsed['host'], ['localhost', '127.0.0.1', '0.0.0.0', '[::1]'], true)
+                || filter_var($parsed['host'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
+                    && !filter_var(gethostbyname($parsed['host']), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
+            ) {
+                throw new \RuntimeException('WhatsApp gateway URL is not allowed (must be HTTPS, public host).');
+            }
+
+            $response = Http::timeout(15)->withHeaders([
                 'Authorization' => "Bearer {$apiKey}",
             ])->post($gatewayUrl, [
                 'phone' => $phone,
