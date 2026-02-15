@@ -6,7 +6,6 @@ use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class FixedLoginSeeder extends Seeder
@@ -17,11 +16,19 @@ class FixedLoginSeeder extends Seeder
         $defaultUnitId = Unit::query()->where('code', 'MI')->value('id')
             ?? Unit::query()->orderBy('id')->value('id');
 
+        $unitIds = [
+            'MI' => Unit::query()->where('code', 'MI')->value('id') ?? $defaultUnitId,
+            'RA' => Unit::query()->where('code', 'RA')->value('id') ?? $defaultUnitId,
+            'DTA' => Unit::query()->where('code', 'DTA')->value('id') ?? $defaultUnitId,
+        ];
+
         $adminTuRole = Role::firstOrCreate(['name' => 'admin_tu']);
         $staffRole = Role::firstOrCreate(['name' => 'staff']);
+        $adminTuMiRole = Role::firstOrCreate(['name' => 'admin_tu_mi']);
+        $adminTuRaRole = Role::firstOrCreate(['name' => 'admin_tu_ra']);
+        $adminTuDtaRole = Role::firstOrCreate(['name' => 'admin_tu_dta']);
 
-        // Admin TU: super-admin style full access, including signing/reprinting receipts.
-        $adminTuRole->syncPermissions(Permission::all());
+        // Admin TU role permissions are managed centrally in RolePermissionSeeder.
 
         // Staff: standard operational access (view/input) without destructive controls.
         $staffRole->syncPermissions([
@@ -41,16 +48,46 @@ class FixedLoginSeeder extends Seeder
             'reports.arrears',
         ]);
 
-        $adminTuUser = User::updateOrCreate(
+        User::updateOrCreate(
+            ['email' => 'admin.tu.mi@sakumi.local'],
+            [
+                'name' => 'Admin TU MI',
+                'password' => Hash::make('AdminTU-MI#2026'),
+                'is_active' => true,
+                'unit_id' => $unitIds['MI'],
+            ]
+        )->syncRoles([$adminTuMiRole->name]);
+
+        User::updateOrCreate(
+            ['email' => 'admin.tu.ra@sakumi.local'],
+            [
+                'name' => 'Admin TU RA',
+                'password' => Hash::make('AdminTU-RA#2026'),
+                'is_active' => true,
+                'unit_id' => $unitIds['RA'],
+            ]
+        )->syncRoles([$adminTuRaRole->name]);
+
+        User::updateOrCreate(
+            ['email' => 'admin.tu.dta@sakumi.local'],
+            [
+                'name' => 'Admin TU DTA',
+                'password' => Hash::make('AdminTU-DTA#2026'),
+                'is_active' => true,
+                'unit_id' => $unitIds['DTA'],
+            ]
+        )->syncRoles([$adminTuDtaRole->name]);
+
+        // Keep legacy account for backward compatibility, but mark inactive.
+        User::updateOrCreate(
             ['email' => 'admin.tu@sakumi.local'],
             [
-                'name' => 'Admin TU',
+                'name' => 'Admin TU (Legacy)',
                 'password' => Hash::make('AdminTU#2026'),
-                'is_active' => true,
-                'unit_id' => $defaultUnitId,
+                'is_active' => false,
+                'unit_id' => $unitIds['MI'],
             ]
-        );
-        $adminTuUser->syncRoles([$adminTuRole->name, 'super_admin']);
+        )->syncRoles([$adminTuRole->name]);
 
         $staffUser = User::updateOrCreate(
             ['email' => 'staff@sakumi.local'],

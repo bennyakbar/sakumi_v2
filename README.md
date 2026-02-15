@@ -1,127 +1,60 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SAKUMI - Sistem Keuangan Sekolah
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## English
 
-## About Laravel
+### Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+SAKUMI is a school finance web application to manage student billing, payments, receipts, settlements, and reporting in one system.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Built for both school operations and technical teams.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### At a Glance
 
-## Quick Start
+- Purpose: structured, auditable, role-based school finance operations.
+- Primary users: TU/Admin, Operator, Treasurer (`bendahara`), Principal, Auditor.
+- Core modules: master data, obligations/invoices, transactions, receipts, settlements, reports.
+- Multi-unit scope support: `MI`, `RA`, `DTA`.
 
-### 1) Setup
+### What This App Covers
 
-```bash
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-```
+1. Student and fee master data management.
+2. Monthly obligation and invoice generation.
+3. Income/expense transaction recording.
+4. Receipt printing and reprint controls.
+5. Settlement and reconciliation.
+6. Daily, monthly, and arrears reporting.
+7. Audit trail and permission-based access.
 
-### 2) Run
+### Role Overview
 
-Option A (recommended helper script):
+- `super_admin`: full system control.
+- `operator_tu`: daily operations and master data.
+- `bendahara`: finance operations, settlements, reporting.
+- `kepala_sekolah`: executive review and monitoring.
+- `auditor`: read-only audit/report access.
 
-```bash
-./start.sh
-```
+### Daily Operational Flow (Non-Technical)
 
-Option B (manual):
+1. Verify users and master data.
+2. Generate obligations/invoices for active period.
+3. Record payments and print receipts.
+4. Close settlements and reconcile totals.
+5. Review reports and audit events.
 
-```bash
-php artisan serve --host=127.0.0.1 --port=8001
-npm run dev
-```
+### Default Login
 
-App URL: `http://127.0.0.1:8001`
+Seeded by `FixedLoginSeeder`:
 
-### Database Environment Commands (Dummy vs Real)
+- Admin TU MI: `admin.tu.mi@sakumi.local` / `AdminTU-MI#2026`
+- Admin TU RA: `admin.tu.ra@sakumi.local` / `AdminTU-RA#2026`
+- Admin TU DTA: `admin.tu.dta@sakumi.local` / `AdminTU-DTA#2026`
+- Staff: `staff@sakumi.local` / `Staff#2026`
+- Bendahara: `bendahara@sakumi.local` / `Bendahara#2026`
+- Kepala Sekolah: `kepala.sekolah@sakumi.local` / `KepalaSekolah#2026`
 
-Project uses two DB profiles:
-- `dummy` for Development/Testing
-- `real` for Production
+Note: `admin_tu_mi`, `admin_tu_ra`, and `admin_tu_dta` are unit-scoped operational admin roles (not `super_admin`).
 
-Prepare env templates first:
-- Edit `.env.dummy` with dummy DB credentials
-- Edit `.env.real` with real DB credentials
-
-Switch to **Dummy DB**:
-
-```bash
-./scripts/switch-env.sh dummy
-php artisan app:init-dummy
-```
-
-Notes:
-- `app:init-dummy` only works when `APP_ENV=testing`
-- It will migrate missing tables and seed dummy data
-- Minimum generated data: 10 users, 200 students, 1000 transactions
-
-Switch to **Real DB**:
-
-```bash
-./scripts/switch-env.sh real
-php artisan migrate --force
-php artisan db:seed --class=RolePermissionSeeder --force
-php artisan db:seed --class=SettingsSeeder --force
-php artisan db:seed --class=FixedLoginSeeder --force
-```
-
-Notes:
-- `switch-env.sh real` requires typing `REAL` as confirmation
-- Real profile must use `APP_ENV=production`
-- Do not run `app:init-dummy` on real DB
-
-### 3) Login
-
-Login yang dipastikan aktif (seeded by `FixedLoginSeeder`):
-
-- **Admin TU**
-  - Email: `admin.tu@sakumi.local`
-  - Password: `AdminTU#2026`
-  - Roles: `admin_tu`, `super_admin`
-
-- **Staff**
-  - Email: `staff@sakumi.local`
-  - Password: `Staff#2026`
-  - Roles: `staff`, `operator_tu`
-
-- **Bendahara**
-  - Email: `bendahara@sakumi.local`
-  - Password: `Bendahara#2026`
-  - Roles: `bendahara`
-
-- **Kepala Sekolah**
-  - Email: `kepala.sekolah@sakumi.local`
-  - Password: `KepalaSekolah#2026`
-  - Roles: `kepala_sekolah`
-
-Jika akun belum ada/tertimpa, jalankan:
-
-```bash
-php artisan db:seed --class=RolePermissionSeeder
-php artisan db:seed --class=FixedLoginSeeder
-php artisan permission:cache-reset
-```
-
-### Login Recovery (Dummy/Testing)
-
-Jika muncul error `These credentials do not match our records.` untuk akun fixed login, jalankan recovery berikut:
+Recovery commands if login/roles are inconsistent:
 
 ```bash
 php artisan db:seed --class=Database\\Seeders\\UnitSeeder
@@ -130,94 +63,461 @@ php artisan db:seed --class=Database\\Seeders\\FixedLoginSeeder
 php artisan permission:cache-reset
 ```
 
-Kredensial default setelah recovery:
+### Quick Start (Developer)
 
-- **Admin TU**
-  - Email: `admin.tu@sakumi.local`
-  - Password: `AdminTU#2026`
-- **Staff**
-  - Email: `staff@sakumi.local`
-  - Password: `Staff#2026`
-- **Bendahara**
-  - Email: `bendahara@sakumi.local`
-  - Password: `Bendahara#2026`
-- **Kepala Sekolah**
-  - Email: `kepala.sekolah@sakumi.local`
-  - Password: `KepalaSekolah#2026`
+Prerequisites:
 
-### 4) Troubleshooting
+- PHP `>=8.2`
+- Composer
+- Node.js + npm
+- SQLite (dummy mode)
+- PostgreSQL (real mode)
+
+Setup:
+
+```bash
+composer install
+npm install
+cp .env.example .env
+cp .env.example .env.dummy
+cp .env.example .env.real
+php artisan key:generate
+```
+
+Start in dummy mode (recommended for local):
+
+```bash
+./scripts/switch-env.sh dummy
+php artisan app:init-dummy
+./start.sh
+```
+
+App URL: `http://127.0.0.1:8001`
+
+Alternative run:
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8001
+npm run dev
+```
+
+### Database Profiles and Safety
+
+SAKUMI enforces strict profile separation to avoid cross-environment mistakes.
+
+- `DB_SAKUMI_MODE=dummy` -> `sakumi_dummy` -> SQLite (`database/sakumi_dummy.sqlite`)
+- `DB_SAKUMI_MODE=real` -> `sakumi_real` -> PostgreSQL
+
+Safety rules:
+
+- Mode must be explicitly `dummy` or `real`; otherwise app fails at boot.
+- In `dummy` mode, writes to `sakumi_real` are blocked.
+- In `real` mode, writes to `sakumi_dummy` are blocked.
+
+Switch profiles:
+
+```bash
+./scripts/switch-env.sh dummy
+./scripts/switch-env.sh real
+```
+
+Script behavior:
+
+- Backs up current `.env` to `storage/env-backups/`
+- Validates `APP_ENV` and `DB_SAKUMI_MODE`
+- Requires typing `REAL` before switching to real
+- Clears Laravel config/cache
+- Auto-migrates and seeds dummy database when switching to dummy
+
+Real mode PostgreSQL example (`.env.real`):
+
+```env
+APP_ENV=production
+DB_SAKUMI_MODE=real
+DB_CONNECTION=sakumi_real
+
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_REAL_DATABASE=sakumi_real
+DB_REAL_USERNAME=sakumi
+DB_REAL_PASSWORD=your_password
+```
+
+If PostgreSQL is Docker-published to host `5433`:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=5433
+```
+
+If Laravel and PostgreSQL are in the same Docker network:
+
+```env
+DB_HOST=tu_db
+DB_PORT=5432
+```
+
+After env changes:
+
+```bash
+php artisan config:clear
+```
+
+### Important Commands
+
+Development:
+
+```bash
+./start.sh
+./stop.sh
+php artisan optimize:clear
+php artisan test
+```
+
+Database/ops:
+
+```bash
+php artisan migrate
+php artisan db:seed --class=RolePermissionSeeder
+php artisan db:seed --class=SettingsSeeder
+php artisan db:seed --class=FixedLoginSeeder
+php artisan app:init-dummy
+php artisan obligations:generate --unit=MI
+php artisan arrears:remind
+```
+
+Backup and permissions:
+
+```bash
+php artisan backup:run
+php artisan backup:list
+php artisan permission:show
+php artisan permission:cache-reset
+```
+
+### Scheduled Jobs
+
+Defined in `routes/console.php`:
+
+- `obligations:generate` monthly (`00:00`, day 1)
+- `arrears:remind` weekly (Monday, `09:00`)
+- `backup:run` daily (`02:00`)
+
+Notes:
+
+- `obligations:generate` requires `--unit` (example: `--unit=MI`).
+- Ensure scheduler setup reflects unit requirements.
+
+Production scheduler cron:
+
+```bash
+* * * * * php /path-to-project/artisan schedule:run >> /dev/null 2>&1
+```
+
+### Health and Monitoring
+
+- Liveness endpoint: `GET /health/live`
+- Diagnostic endpoint: `GET /health` (authenticated + restricted role)
+
+### Troubleshooting
 
 - Port `8001` already used:
-  - Stop existing process: `./stop.sh`
-  - Or run manual server on another port:
-    `php artisan serve --host=127.0.0.1 --port=8002`
+
+```bash
+./stop.sh
+```
+
 - Frontend assets not loading:
-  - Ensure Vite is running: `npm run dev`
-  - Reinstall packages if needed: `npm install`
-- Database / migration errors:
-  - Check `.env` DB settings
-  - Jalankan non-destruktif: `php artisan migrate` lalu `php artisan db:seed`
-  - Jangan gunakan `php artisan migrate:fresh --seed` pada DB yang sudah berisi data entry (command ini menghapus semua tabel/data)
-- Permission/cache oddities:
-  - Clear Laravel cache: `php artisan optimize:clear`
 
-### 5) Security (OWASP ZAP)
+```bash
+npm install
+npm run dev
+```
 
-This repository includes an OWASP ZAP baseline scan workflow:
+- Database connection issues:
+- Verify `DB_SAKUMI_MODE`
+- Verify `DB_HOST` and `DB_PORT` match your topology
+- Run `php artisan config:clear`
 
-- Workflow file: `.github/workflows/zap-baseline.yml`
-- Triggers: pull requests, manual dispatch, and weekly schedule
-- Target: local app at `http://127.0.0.1:8000`
-- Reports: uploaded as `zap-baseline-report` artifact (`html`, `json`, `xml`, `md`)
-- Gate: workflow fails if any **Medium** or **High** risk alerts are detected
-- Pull requests: posts an automatic comment with Medium/High alert counts
+- Migration/seed issues:
+- Prefer non-destructive flow: `php artisan migrate` then targeted seeders
+- Avoid `migrate:fresh` on non-disposable data
 
-To run it manually from GitHub UI:
+### Architecture Pointers (Contributors)
 
-1. Open **Actions** → **OWASP ZAP Baseline**
-2. Click **Run workflow**
-3. Open run artifacts and download `zap-baseline-report`
+- `app/Http/Controllers/`: feature controllers
+- `app/Services/`: business rules for transactions/invoices/receipts
+- `app/Console/Commands/`: operational automation commands
+- `database/migrations/`: schema evolution
+- `database/seeders/`: baseline and dummy test data
+- `scripts/switch-env.sh`: safety-first profile switching
 
-## Learning Laravel
+### Security and CI
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- OWASP ZAP baseline workflow: `.github/workflows/zap-baseline.yml`
+- Pipeline fails on Medium/High findings
+- Uploads `zap-baseline-report` artifact
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Bahasa Indonesia
 
-## Laravel Sponsors
+### Ringkasan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+SAKUMI adalah aplikasi web keuangan sekolah untuk mengelola tagihan siswa, pembayaran, kuitansi, settlement, dan laporan dalam satu sistem.
 
-### Premium Partners
+Didesain untuk tim operasional sekolah sekaligus tim teknis.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Gambaran Singkat
 
-## Contributing
+- Tujuan: operasional keuangan sekolah yang terstruktur, ter-audit, dan berbasis peran.
+- Pengguna utama: TU/Admin, Operator, Bendahara, Kepala Sekolah, Auditor.
+- Modul utama: master data, kewajiban/invoice, transaksi, kuitansi, settlement, laporan.
+- Mendukung multi-unit: `MI`, `RA`, `DTA`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Cakupan Aplikasi
 
-## Code of Conduct
+1. Kelola master data siswa dan biaya.
+2. Generate kewajiban bulanan dan invoice.
+3. Catat transaksi pemasukan/pengeluaran.
+4. Cetak dan cetak ulang kuitansi (sesuai kontrol akses).
+5. Settlement dan rekonsiliasi.
+6. Laporan harian, bulanan, dan tunggakan.
+7. Audit trail dan kontrol akses berbasis permission.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Ringkasan Peran
 
-## Security Vulnerabilities
+- `super_admin`: kontrol penuh sistem.
+- `operator_tu`: operasional harian dan master data.
+- `bendahara`: operasional keuangan, settlement, pelaporan.
+- `kepala_sekolah`: review dan monitoring eksekutif.
+- `auditor`: akses baca untuk audit/laporan.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Alur Operasional Harian (Non-Teknis)
+
+1. Verifikasi user dan master data.
+2. Generate kewajiban/invoice untuk periode aktif.
+3. Input pembayaran dan cetak kuitansi.
+4. Tutup settlement dan rekonsiliasi total.
+5. Review laporan dan event audit.
+
+### Akun Login Default
+
+Di-seed oleh `FixedLoginSeeder`:
+
+- Admin TU MI: `admin.tu.mi@sakumi.local` / `AdminTU-MI#2026`
+- Admin TU RA: `admin.tu.ra@sakumi.local` / `AdminTU-RA#2026`
+- Admin TU DTA: `admin.tu.dta@sakumi.local` / `AdminTU-DTA#2026`
+- Staff: `staff@sakumi.local` / `Staff#2026`
+- Bendahara: `bendahara@sakumi.local` / `Bendahara#2026`
+- Kepala Sekolah: `kepala.sekolah@sakumi.local` / `KepalaSekolah#2026`
+
+Catatan: `admin_tu_mi`, `admin_tu_ra`, dan `admin_tu_dta` adalah role admin operasional per unit (bukan `super_admin`).
+
+Command recovery jika data login/role tidak konsisten:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\UnitSeeder
+php artisan db:seed --class=Database\\Seeders\\RolePermissionSeeder
+php artisan db:seed --class=Database\\Seeders\\FixedLoginSeeder
+php artisan permission:cache-reset
+```
+
+### Quick Start (Developer)
+
+Prasyarat:
+
+- PHP `>=8.2`
+- Composer
+- Node.js + npm
+- SQLite (mode dummy)
+- PostgreSQL (mode real)
+
+Setup:
+
+```bash
+composer install
+npm install
+cp .env.example .env
+cp .env.example .env.dummy
+cp .env.example .env.real
+php artisan key:generate
+```
+
+Jalankan mode dummy (disarankan untuk lokal):
+
+```bash
+./scripts/switch-env.sh dummy
+php artisan app:init-dummy
+./start.sh
+```
+
+URL aplikasi: `http://127.0.0.1:8001`
+
+Alternatif menjalankan:
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8001
+npm run dev
+```
+
+### Profil Database dan Keamanan
+
+SAKUMI menerapkan pemisahan profil DB yang ketat untuk mencegah kesalahan lintas environment.
+
+- `DB_SAKUMI_MODE=dummy` -> `sakumi_dummy` -> SQLite (`database/sakumi_dummy.sqlite`)
+- `DB_SAKUMI_MODE=real` -> `sakumi_real` -> PostgreSQL
+
+Aturan keamanan:
+
+- Mode harus eksplisit `dummy` atau `real`; jika tidak valid, aplikasi gagal saat boot.
+- Di mode `dummy`, write ke `sakumi_real` diblokir.
+- Di mode `real`, write ke `sakumi_dummy` diblokir.
+
+Ganti profil environment:
+
+```bash
+./scripts/switch-env.sh dummy
+./scripts/switch-env.sh real
+```
+
+Perilaku script:
+
+- Backup `.env` saat ini ke `storage/env-backups/`
+- Validasi `APP_ENV` dan `DB_SAKUMI_MODE`
+- Wajib ketik `REAL` saat pindah ke mode real
+- Membersihkan cache/config Laravel
+- Auto migrate + seed database dummy saat pindah ke dummy
+
+Contoh minimal mode real PostgreSQL (`.env.real`):
+
+```env
+APP_ENV=production
+DB_SAKUMI_MODE=real
+DB_CONNECTION=sakumi_real
+
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_REAL_DATABASE=sakumi_real
+DB_REAL_USERNAME=sakumi
+DB_REAL_PASSWORD=your_password
+```
+
+Jika PostgreSQL di Docker expose ke host port `5433`:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=5433
+```
+
+Jika Laravel dan PostgreSQL berada di network Docker yang sama:
+
+```env
+DB_HOST=tu_db
+DB_PORT=5432
+```
+
+Setelah mengubah env:
+
+```bash
+php artisan config:clear
+```
+
+### Command Penting
+
+Development:
+
+```bash
+./start.sh
+./stop.sh
+php artisan optimize:clear
+php artisan test
+```
+
+Database/operasional:
+
+```bash
+php artisan migrate
+php artisan db:seed --class=RolePermissionSeeder
+php artisan db:seed --class=SettingsSeeder
+php artisan db:seed --class=FixedLoginSeeder
+php artisan app:init-dummy
+php artisan obligations:generate --unit=MI
+php artisan arrears:remind
+```
+
+Backup dan permission:
+
+```bash
+php artisan backup:run
+php artisan backup:list
+php artisan permission:show
+php artisan permission:cache-reset
+```
+
+### Scheduled Jobs
+
+Didefinisikan di `routes/console.php`:
+
+- `obligations:generate` bulanan (`00:00`, tanggal 1)
+- `arrears:remind` mingguan (Senin, `09:00`)
+- `backup:run` harian (`02:00`)
+
+Catatan:
+
+- `obligations:generate` wajib `--unit` (contoh: `--unit=MI`).
+- Pastikan setup scheduler mempertimbangkan kebutuhan unit.
+
+Cron scheduler production:
+
+```bash
+* * * * * php /path-to-project/artisan schedule:run >> /dev/null 2>&1
+```
+
+### Health dan Monitoring
+
+- Endpoint liveness: `GET /health/live`
+- Endpoint diagnostik: `GET /health` (authenticated + role terbatas)
+
+### Troubleshooting
+
+- Port `8001` sudah dipakai:
+
+```bash
+./stop.sh
+```
+
+- Asset frontend tidak muncul:
+
+```bash
+npm install
+npm run dev
+```
+
+- Masalah koneksi database:
+- Cek `DB_SAKUMI_MODE`
+- Cek `DB_HOST` dan `DB_PORT` sesuai topologi
+- Jalankan `php artisan config:clear`
+
+- Masalah migration/seed:
+- Gunakan flow non-destruktif dulu: `php artisan migrate` lalu seeder spesifik
+- Hindari `migrate:fresh` pada data non-disposable
+
+### Poin Arsitektur (Kontributor)
+
+- `app/Http/Controllers/`: controller fitur
+- `app/Services/`: business rules transaksi/invoice/kuitansi
+- `app/Console/Commands/`: otomatisasi operasional
+- `database/migrations/`: evolusi skema
+- `database/seeders/`: baseline data dan dummy testing
+- `scripts/switch-env.sh`: switching profil dengan guard keamanan
+
+### Keamanan dan CI
+
+- Workflow OWASP ZAP baseline: `.github/workflows/zap-baseline.yml`
+- Pipeline gagal jika ada temuan Medium/High
+- Mengunggah artifact `zap-baseline-report`
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT.

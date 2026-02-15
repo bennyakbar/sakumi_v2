@@ -21,7 +21,7 @@ class RolePermissionSeeder extends Seeder
             'master.students.view', 'master.students.create', 'master.students.edit', 'master.students.delete',
             'master.students.import', 'master.students.export',
             // Transactions
-            'transactions.view', 'transactions.create', 'transactions.cancel',
+            'transactions.view', 'transactions.create', 'transactions.expense.create', 'transactions.cancel',
             // Receipts
             'receipts.view', 'receipts.print', 'receipts.reprint',
             // Invoices
@@ -63,7 +63,7 @@ class RolePermissionSeeder extends Seeder
             'master.fee-matrix.view', 'master.fee-matrix.create', 'master.fee-matrix.edit', 'master.fee-matrix.delete',
             'master.classes.view',
             'master.categories.view',
-            'transactions.view', 'transactions.create', 'transactions.cancel',
+            'transactions.view', 'transactions.create', 'transactions.expense.create', 'transactions.cancel',
             'receipts.view', 'receipts.print', 'receipts.reprint',
             'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
             'settlements.view', 'settlements.create', 'settlements.cancel',
@@ -110,6 +110,30 @@ class RolePermissionSeeder extends Seeder
             'users.view',
             'settings.view',
         ]);
+
+        // Admin TU per unit (MI/RA/DTA) — granular operational access in own unit.
+        $adminTuUnitPermissions = [
+            'dashboard.view',
+            'master.students.view', 'master.students.create', 'master.students.edit', 'master.students.delete',
+            'master.students.import', 'master.students.export',
+            'master.classes.view', 'master.classes.create', 'master.classes.edit', 'master.classes.delete',
+            'master.categories.view', 'master.categories.create', 'master.categories.edit', 'master.categories.delete',
+            'master.fee-types.view', 'master.fee-types.create', 'master.fee-types.edit', 'master.fee-types.delete',
+            'master.fee-matrix.view', 'master.fee-matrix.create', 'master.fee-matrix.edit', 'master.fee-matrix.delete',
+            'transactions.view', 'transactions.create', 'transactions.expense.create', 'transactions.cancel',
+            'receipts.view', 'receipts.print', 'receipts.reprint',
+            'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
+            'settlements.view', 'settlements.create', 'settlements.cancel',
+            'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
+            'users.view',
+            'settings.view',
+            'audit.view',
+            'notifications.view',
+        ];
+        Role::firstOrCreate(['name' => 'admin_tu'])->syncPermissions($adminTuUnitPermissions); // legacy compatibility
+        Role::firstOrCreate(['name' => 'admin_tu_mi'])->syncPermissions($adminTuUnitPermissions);
+        Role::firstOrCreate(['name' => 'admin_tu_ra'])->syncPermissions($adminTuUnitPermissions);
+        Role::firstOrCreate(['name' => 'admin_tu_dta'])->syncPermissions($adminTuUnitPermissions);
 
         // Auditor — view-only all data, audit log
         $auditor = Role::firstOrCreate(['name' => 'auditor']);

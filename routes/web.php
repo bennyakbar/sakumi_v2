@@ -18,7 +18,9 @@ Route::get('/health', [HealthCheckController::class, 'check'])
     ->middleware(['auth', 'role:super_admin']);
 
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -32,7 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::prefix('master')->name('master.')->group(function () {
-        Route::middleware('role:super_admin,operator_tu')->group(function () {
+        Route::middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,operator_tu')->group(function () {
             Route::get('students/import', [StudentController::class, 'import'])
                 ->middleware('can:master.students.import')
                 ->name('students.import');
@@ -50,20 +52,20 @@ Route::middleware('auth')->group(function () {
             Route::resource('categories', CategoryController::class);
         });
 
-        Route::middleware('role:super_admin,bendahara')->group(function () {
+        Route::middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara')->group(function () {
             Route::resource('fee-types', FeeTypeController::class);
             Route::resource('fee-matrix', FeeMatrixController::class);
         });
     });
 
     // Transactions
-    Route::middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+    Route::middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::resource('transactions', \App\Http\Controllers\Transaction\TransactionController::class);
         Route::get('/receipts/{transaction}/print', [\App\Http\Controllers\ReceiptController::class, 'print'])->name('receipts.print');
     });
 
     // Invoices
-    Route::prefix('invoices')->name('invoices.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+    Route::prefix('invoices')->name('invoices.')->middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/', [\App\Http\Controllers\Invoice\InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Invoice\InvoiceController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Invoice\InvoiceController::class, 'store'])->name('store');
@@ -75,7 +77,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Settlements
-    Route::prefix('settlements')->name('settlements.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+    Route::prefix('settlements')->name('settlements.')->middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/', [\App\Http\Controllers\Settlement\SettlementController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Settlement\SettlementController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Settlement\SettlementController::class, 'store'])->name('store');
@@ -84,7 +86,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Reports
-    Route::prefix('reports')->name('reports.')->middleware('role:super_admin,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+    Route::prefix('reports')->name('reports.')->middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
         Route::get('/daily', [\App\Http\Controllers\Report\ReportController::class, 'daily'])->name('daily');
         Route::get('/monthly', [\App\Http\Controllers\Report\ReportController::class, 'monthly'])->name('monthly');
         Route::get('/arrears', [\App\Http\Controllers\Report\ReportController::class, 'arrears'])->name('arrears');
