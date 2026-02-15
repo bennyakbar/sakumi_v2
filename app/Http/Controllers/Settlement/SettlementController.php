@@ -10,6 +10,7 @@ use App\Services\SettlementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -22,12 +23,13 @@ class SettlementController extends Controller
     public function index(Request $request): View
     {
         $query = Settlement::with(['student.schoolClass', 'creator']);
+        $likeOperator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('settlement_number', 'ilike', "%{$search}%")
-                    ->orWhereHas('student', fn ($sq) => $sq->where('name', 'ilike', "%{$search}%"));
+            $query->where(function ($q) use ($search, $likeOperator) {
+                $q->where('settlement_number', $likeOperator, "%{$search}%")
+                    ->orWhereHas('student', fn ($sq) => $sq->where('name', $likeOperator, "%{$search}%"));
             });
         }
 

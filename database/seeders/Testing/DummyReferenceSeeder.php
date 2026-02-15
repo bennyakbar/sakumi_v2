@@ -4,6 +4,8 @@ namespace Database\Seeders\Testing;
 
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\FeeMatrix;
+use App\Models\FeeType;
 use App\Models\SchoolClass;
 use App\Models\StudentCategory;
 
@@ -97,6 +99,67 @@ class DummyReferenceSeeder extends TestingSeeder
                     'type' => $item['type'],
                     'description' => null,
                     'is_active' => true,
+                ]
+            );
+        }
+
+        // ── Fee Types ──
+        $feeTypes = [
+            ['code' => 'SPP', 'name' => 'SPP Bulanan', 'description' => 'Sumbangan Pembinaan Pendidikan', 'is_monthly' => true, 'is_active' => true],
+            ['code' => 'DU', 'name' => 'Daftar Ulang', 'description' => 'Biaya daftar ulang tahunan', 'is_monthly' => false, 'is_active' => true],
+            ['code' => 'KGT', 'name' => 'Uang Kegiatan', 'description' => 'Biaya kegiatan ekstrakurikuler', 'is_monthly' => true, 'is_active' => true],
+            ['code' => 'SRG', 'name' => 'Seragam', 'description' => 'Biaya seragam sekolah', 'is_monthly' => false, 'is_active' => true],
+            ['code' => 'BKU', 'name' => 'Buku Paket', 'description' => 'Biaya buku paket pelajaran', 'is_monthly' => false, 'is_active' => true],
+        ];
+
+        foreach ($feeTypes as $item) {
+            FeeType::query()->firstOrCreate(
+                ['code' => $item['code']],
+                $item
+            );
+        }
+
+        // ── Fee Matrix (maps fee types to classes/categories with amounts) ──
+        $sppId = FeeType::where('code', 'SPP')->value('id');
+        $kgtId = FeeType::where('code', 'KGT')->value('id');
+        $allClassIds = SchoolClass::pluck('id')->all();
+        $effectiveFrom = '2025-07-01';
+
+        // SPP: all classes, null category (applies to all), tiered by level
+        $sppAmounts = [
+            1 => 150000, // level 1
+            2 => 175000, // level 2
+            3 => 200000,
+            4 => 200000,
+            5 => 225000,
+            6 => 225000,
+        ];
+
+        foreach (SchoolClass::all() as $class) {
+            $amount = $sppAmounts[$class->level] ?? 200000;
+
+            FeeMatrix::query()->firstOrCreate(
+                ['fee_type_id' => $sppId, 'class_id' => $class->id, 'category_id' => null],
+                [
+                    'amount' => $amount,
+                    'effective_from' => $effectiveFrom,
+                    'effective_to' => null,
+                    'is_active' => true,
+                    'notes' => "SPP {$class->name} level {$class->level}",
+                ]
+            );
+        }
+
+        // Kegiatan: flat 25000/month for all classes
+        foreach ($allClassIds as $classId) {
+            FeeMatrix::query()->firstOrCreate(
+                ['fee_type_id' => $kgtId, 'class_id' => $classId, 'category_id' => null],
+                [
+                    'amount' => 25000,
+                    'effective_from' => $effectiveFrom,
+                    'effective_to' => null,
+                    'is_active' => true,
+                    'notes' => 'Uang kegiatan bulanan',
                 ]
             );
         }

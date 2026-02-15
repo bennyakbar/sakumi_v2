@@ -12,6 +12,7 @@ use App\Services\InvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -24,12 +25,13 @@ class InvoiceController extends Controller
     public function index(Request $request): View
     {
         $query = Invoice::with(['student.schoolClass', 'creator']);
+        $likeOperator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'ilike', "%{$search}%")
-                    ->orWhereHas('student', fn ($sq) => $sq->where('name', 'ilike', "%{$search}%"));
+            $query->where(function ($q) use ($search, $likeOperator) {
+                $q->where('invoice_number', $likeOperator, "%{$search}%")
+                    ->orWhereHas('student', fn ($sq) => $sq->where('name', $likeOperator, "%{$search}%"));
             });
         }
 

@@ -19,6 +19,7 @@ class DummyDatabaseSeeder extends TestingSeeder
             DummyReferenceSeeder::class,
             DummyUsersSeeder::class,
             DummyStudentsSeeder::class,
+            DummyObligationsSeeder::class,
             DummyTransactionsSeeder::class,
         ]);
     }
