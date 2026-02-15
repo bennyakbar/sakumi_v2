@@ -13,11 +13,18 @@ class Transaction extends Model
 {
     use HasFactory, LogsActivity;
 
+    protected $appends = [
+        'code',
+        'notes',
+    ];
+
     protected $fillable = [
         'transaction_number',
         'transaction_date',
         'type',
         'student_id',
+        'account_id',
+        'category_id',
         'payment_method',
         'total_amount',
         'description',
@@ -56,6 +63,21 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->creator();
+    }
+
     public function canceller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by');
@@ -74,5 +96,15 @@ class Transaction extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    public function getCodeAttribute(): string
+    {
+        return (string) $this->transaction_number;
+    }
+
+    public function getNotesAttribute(): ?string
+    {
+        return $this->description;
     }
 }

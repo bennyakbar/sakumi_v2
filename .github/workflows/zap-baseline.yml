@@ -1,0 +1,145 @@
+name: OWASP ZAP Baseline
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1"
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare app
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          touch database/database.sqlite
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+
+      - name: Start Laravel server
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/zap-server.log 2>&1 &
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8000/health/live && exit 0
+            sleep 1
+          done
+          echo "Laravel server did not become ready in time."
+          exit 1
+
+      - name: Run ZAP baseline scan
+        run: |
+          mkdir -p reports
+          docker run --rm --network host \
+            -v "${PWD}:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+            -t http://127.0.0.1:8000 \
+            -r reports/zap-report.html \
+            -J reports/zap-report.json \
+            -w reports/zap-warnings.md \
+            -x reports/zap-report.xml \
+            -m 3 \
+            -I
+
+      - name: Count ZAP Medium/High alerts
+        id: zap_counts
+        if: always()
+        run: |
+          MEDIUM_COUNT=$(jq '[.site[]?.alerts[]? | select((.riskcode | tonumber) == 2)] | length' reports/zap-report.json)
+          HIGH_COUNT=$(jq '[.site[]?.alerts[]? | select((.riskcode | tonumber) >= 3)] | length' reports/zap-report.json)
+          echo "ZAP medium alerts: ${MEDIUM_COUNT}"
+          echo "ZAP high alerts: ${HIGH_COUNT}"
+          echo "medium=${MEDIUM_COUNT}" >> "$GITHUB_OUTPUT"
+          echo "high=${HIGH_COUNT}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment ZAP summary on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const medium = "${{ steps.zap_counts.outputs.medium }}";
+            const high = "${{ steps.zap_counts.outputs.high }}";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const marker = "<!-- zap-baseline-summary -->";
+            const body = [
+              marker,
+              "## OWASP ZAP Baseline Result",
+              "",
+              `- Medium alerts: **${medium}**`,
+              `- High alerts: **${high}**`,
+              `- Reports: workflow artifacts in this run (${runUrl})`,
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) =>
+              comment.user?.type === "Bot" &&
+              typeof comment.body === "string" &&
+              comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Fail on Medium/High alerts
+        if: always()
+        run: |
+          MEDIUM_COUNT="${{ steps.zap_counts.outputs.medium }}"
+          HIGH_COUNT="${{ steps.zap_counts.outputs.high }}"
+
+          if [ "$MEDIUM_COUNT" -gt 0 ] || [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "Failing due to Medium/High ZAP alerts."
+            exit 1
+          fi
+
+      - name: Upload ZAP reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: reports/
+          if-no-files-found: ignore
+
+      - name: Stop Laravel server
+        if: always()
+        run: |
+          if [ -n "${SERVER_PID:-}" ]; then
+            kill "$SERVER_PID" || true
+          fi

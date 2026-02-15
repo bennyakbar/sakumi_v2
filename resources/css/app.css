@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+        font-size: 13px;
+        /* 81.25% - Compact UI */
+        line-height: normal;
+        /* Tighten vertical rhythm */
+        scroll-behavior: smooth;
+    }
+}
+
+@layer utilities {
+    .antialiased {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}

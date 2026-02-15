@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
@@ -26,7 +25,9 @@ return new class extends Migration
             $table->index('student_id');
         });
 
-        DB::statement("ALTER TABLE notifications ADD CONSTRAINT chk_whatsapp_status CHECK (whatsapp_status IN ('pending', 'sent', 'failed'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE notifications ADD CONSTRAINT chk_whatsapp_status CHECK (whatsapp_status IN ('pending', 'sent', 'failed'))");
+        }
     }
 
     public function down(): void

@@ -50,6 +50,43 @@ npm run dev
 
 App URL: `http://127.0.0.1:8001`
 
+### Database Environment Commands (Dummy vs Real)
+
+Project uses two DB profiles:
+- `dummy` for Development/Testing
+- `real` for Production
+
+Prepare env templates first:
+- Edit `.env.dummy` with dummy DB credentials
+- Edit `.env.real` with real DB credentials
+
+Switch to **Dummy DB**:
+
+```bash
+./scripts/switch-env.sh dummy
+php artisan app:init-dummy
+```
+
+Notes:
+- `app:init-dummy` only works when `APP_ENV=testing`
+- It will migrate missing tables and seed dummy data
+- Minimum generated data: 10 users, 200 students, 1000 transactions
+
+Switch to **Real DB**:
+
+```bash
+./scripts/switch-env.sh real
+php artisan migrate --force
+php artisan db:seed --class=RolePermissionSeeder --force
+php artisan db:seed --class=SettingsSeeder --force
+php artisan db:seed --class=FixedLoginSeeder --force
+```
+
+Notes:
+- `switch-env.sh real` requires typing `REAL` as confirmation
+- Real profile must use `APP_ENV=production`
+- Do not run `app:init-dummy` on real DB
+
 ### 3) Login
 
 Login yang dipastikan aktif (seeded by `FixedLoginSeeder`):

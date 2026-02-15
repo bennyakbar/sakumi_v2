@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
@@ -32,8 +31,10 @@ return new class extends Migration
         });
 
         // CHECK constraints via raw SQL for PostgreSQL
-        DB::statement("ALTER TABLE students ADD CONSTRAINT chk_students_gender CHECK (gender IN ('L', 'P'))");
-        DB::statement("ALTER TABLE students ADD CONSTRAINT chk_students_status CHECK (status IN ('active', 'graduated', 'dropout', 'transferred'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE students ADD CONSTRAINT chk_students_gender CHECK (gender IN ('L', 'P'))");
+            DB::statement("ALTER TABLE students ADD CONSTRAINT chk_students_status CHECK (status IN ('active', 'graduated', 'dropout', 'transferred'))");
+        }
     }
 
     public function down(): void

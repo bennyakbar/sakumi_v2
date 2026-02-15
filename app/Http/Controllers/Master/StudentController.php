@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Http\Controllers\Master;
+
+use App\Exports\StudentExport;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Master\ImportStudentRequest;
+use App\Http\Requests\Master\StoreStudentRequest;
+use App\Http\Requests\Master\UpdateStudentRequest;
+use App\Imports\StudentImport;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use App\Models\StudentCategory;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+
+class StudentController extends Controller
+{
+    public function index(): View
+    {
+        $students = Student::query()
+            ->with(['schoolClass:id,name', 'category:id,name'])
+            ->when(request('search'), function ($query, string $search): void {
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery->where('nis', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%");
+                });
+            })
+            ->when(request('class_id'), fn ($query, $classId) => $query->where('class_id', $classId))
+            ->when(request('category_id'), fn ($query, $categoryId) => $query->where('category_id', $categoryId))
+            ->when(request('status'), fn ($query, $status) => $query->where('status', $status))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('master.students.index', compact('students'));
+    }
+
+    public function import(): View
+    {
+        return view('master.students.import');
+    }
+
+    public function downloadTemplate()
+    {
+        return response()->download(base_path('database/schema/student-import-template.csv'));
+    }
+
+    public function processImport(ImportStudentRequest $request): RedirectResponse
+    {
+        /** @var UploadedFile $file */
+        $file = $request->file('file');
+        $import = new StudentImport();
+
+        if (in_array(strtolower($file->getClientOriginalExtension()), ['csv', 'txt'], true)) {
+            $rows = $this->rowsFromCsv($file);
+            $import->collection($rows);
+        } else {
+            $import->import($file);
+        }
+
+        return redirect()->route('master.students.index')
+            ->with('success', 'Student import finished successfully.')
+            ->with('error_list', $import->errors);
+    }
+
+    public function export()
+    {
+        return Excel::download(new StudentExport(), 'students.xlsx');
+    }
+
+    public function create(): View
+    {
+        $classes = SchoolClass::query()->where('is_active', true)->orderBy('name')->get();
+        $categories = StudentCategory::query()->orderBy('name')->get();
+
+        return view('master.students.create', compact('classes', 'categories'));
+    }
+
+    public function store(StoreStudentRequest $request): RedirectResponse
+    {
+        Student::create($request->validated());
+
+        return redirect()->route('master.students.index')
+            ->with('success', 'Student created successfully.');
+    }
+
+    public function show(Student $student): View
+    {
+        $student->load(['schoolClass:id,name', 'category:id,name']);
+
+        return view('master.students.show', compact('student'));
+    }
+
+    public function edit(Student $student): View
+    {
+        $classes = SchoolClass::query()->where('is_active', true)->orderBy('name')->get();
+        $categories = StudentCategory::query()->orderBy('name')->get();
+
+        return view('master.students.edit', compact('student', 'classes', 'categories'));
+    }
+
+    public function update(UpdateStudentRequest $request, Student $student): RedirectResponse
+    {
+        $student->update($request->validated());
+
+        return redirect()->route('master.students.index')
+            ->with('success', 'Student updated successfully.');
+    }
+
+    public function destroy(Student $student): RedirectResponse
+    {
+        $student->delete();
+
+        return redirect()->route('master.students.index')
+            ->with('success', 'Student deleted successfully.');
+    }
+
+    private function rowsFromCsv(UploadedFile $file): Collection
+    {
+        $rows = collect();
+        $handle = fopen($file->getRealPath(), 'rb');
+
+        if ($handle === false) {
+            return $rows;
+        }
+
+        $header = fgetcsv($handle) ?: [];
+
+        while (($data = fgetcsv($handle)) !== false) {
+            if (count($data) !== count($header)) {
+                continue;
+            }
+
+            $rows->push(collect(array_combine($header, $data)));
+        }
+
+        fclose($handle);
+
+        return $rows;
+    }
+}

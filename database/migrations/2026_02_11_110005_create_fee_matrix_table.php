@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('fee_matrix', function (Blueprint $table) {
@@ -23,7 +22,9 @@ return new class extends Migration
             $table->index(['fee_type_id', 'class_id', 'category_id', 'effective_from'], 'idx_feematrix_lookup');
         });
 
-        DB::statement("ALTER TABLE fee_matrix ADD CONSTRAINT chk_effective_dates CHECK (effective_to IS NULL OR effective_to >= effective_from)");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE fee_matrix ADD CONSTRAINT chk_effective_dates CHECK (effective_to IS NULL OR effective_to >= effective_from)");
+        }
     }
 
     public function down(): void
