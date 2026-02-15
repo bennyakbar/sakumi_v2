@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,7 @@ class CategoryFactory extends Factory
             : fake()->randomElement(['Listrik', 'Air', 'ATK', 'Internet', 'Kebersihan', 'Kegiatan Siswa']);
 
         return [
+            'unit_id' => Unit::factory(),
             'code' => strtoupper(substr($type, 0, 3)).'-'.fake()->unique()->numerify('###'),
             'name' => $name,
             'type' => $type,

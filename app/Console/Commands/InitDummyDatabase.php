@@ -22,6 +22,7 @@ class InitDummyDatabase extends Command
         }
 
         $requiredTables = [
+            'units',
             'users',
             'classes',
             'student_categories',

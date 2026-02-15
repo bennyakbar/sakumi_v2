@@ -301,7 +301,7 @@
 <body onload="window.print()">
     @php
         $schoolName = getSetting('school_name', 'MI NURUL FALAH');
-        $schoolAddress = getSetting('school_address', 'Komplek Sukamenak Indah Blok G No.4A, RT.06/RW.01, Sayati, Margahayu, Sayati, Kec. Margahayu, Kabupaten Bandung, Jawa Barat 40228');
+        $schoolAddress = getSetting('school_address', 'Komplek Sukamenak Indah Blok G No.4A, RT.06/RW.01<br>Sayati, Margahayu, Sayati, Kec. Margahayu, Kabupaten Bandung, Jawa Barat 40228');
         $schoolPhone = getSetting('school_phone', '-');
         $foundationLogo = getSetting('foundation_logo', '');
         $foundationLogoPath = public_path('images/logo-yayasan.png');
@@ -333,8 +333,8 @@
 
             <div class="head-center">
                 <div class="name">{{ $schoolName }}</div>
-                <div class="address">{{ $schoolAddress }}</div>
-                <h1 class="doc-title">KWITANSI PEMBAYARAN</h1>
+                <div class="address">{!! strip_tags($schoolAddress, '<br>') !!}</div>
+                <h1 class="doc-title">RECEIPT PEMBAYARAN</h1>
             </div>
 
             <div class="logo-wrap" aria-label="Logo MI">

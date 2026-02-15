@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\StudentObligation;
 use App\Models\Transaction;
+use App\Models\Unit;
 use App\Services\ReportService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -14,31 +16,78 @@ class DashboardController extends Controller
         private readonly ReportService $reportService,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $scope = $request->input('scope', 'unit');
+        $consolidated = $scope === 'all' && auth()->user()->hasRole('super_admin');
+        $scope = $consolidated ? 'all' : 'unit';
+
         $today = now()->toDateString();
 
-        $todayIncome = Transaction::where('status', 'completed')
+        $todayIncomeQuery = Transaction::where('status', 'completed')
             ->where('type', 'income')
-            ->whereDate('transaction_date', $today)
-            ->sum('total_amount');
+            ->whereDate('transaction_date', $today);
 
-        $monthIncome = Transaction::where('status', 'completed')
+        $monthIncomeQuery = Transaction::where('status', 'completed')
             ->where('type', 'income')
             ->whereMonth('transaction_date', now()->month)
-            ->whereYear('transaction_date', now()->year)
-            ->sum('total_amount');
+            ->whereYear('transaction_date', now()->year);
 
-        $totalArrears = StudentObligation::where('is_paid', false)
-            ->sum('amount');
+        $arrearsQuery = StudentObligation::where('is_paid', false);
 
-        $recentTransactions = Transaction::with(['student.schoolClass', 'creator'])
+        $recentQuery = Transaction::query()
             ->where('status', 'completed')
             ->latest('transaction_date')
-            ->limit(10)
-            ->get();
+            ->limit(10);
 
-        $chartData = $this->reportService->getChartData(6);
+        if ($consolidated) {
+            $todayIncomeQuery->withoutGlobalScope('unit');
+            $monthIncomeQuery->withoutGlobalScope('unit');
+            $arrearsQuery->withoutGlobalScope('unit');
+            $recentQuery->withoutGlobalScope('unit')->with([
+                'unit',
+                'student' => fn ($q) => $q->withoutGlobalScope('unit'),
+                'student.schoolClass' => fn ($q) => $q->withoutGlobalScope('unit'),
+                'creator',
+            ]);
+        } else {
+            $recentQuery->with(['student.schoolClass', 'creator']);
+        }
+
+        $todayIncome = $todayIncomeQuery->sum('total_amount');
+        $monthIncome = $monthIncomeQuery->sum('total_amount');
+        $totalArrears = $arrearsQuery->sum('amount');
+        $recentTransactions = $recentQuery->get();
+
+        $chartData = $this->reportService->getChartData(6, $consolidated);
+
+        $unitBreakdown = [];
+        if ($consolidated) {
+            $units = Unit::where('is_active', true)->get();
+            foreach ($units as $unit) {
+                $unitBreakdown[] = [
+                    'name' => $unit->name,
+                    'code' => $unit->code,
+                    'today_income' => Transaction::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->where('status', 'completed')
+                        ->where('type', 'income')
+                        ->whereDate('transaction_date', $today)
+                        ->sum('total_amount'),
+                    'month_income' => Transaction::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->where('status', 'completed')
+                        ->where('type', 'income')
+                        ->whereMonth('transaction_date', now()->month)
+                        ->whereYear('transaction_date', now()->year)
+                        ->sum('total_amount'),
+                    'arrears' => StudentObligation::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->where('is_paid', false)
+                        ->sum('amount'),
+                ];
+            }
+        }
 
         return view('dashboard', compact(
             'todayIncome',
@@ -46,6 +95,9 @@ class DashboardController extends Controller
             'totalArrears',
             'recentTransactions',
             'chartData',
+            'scope',
+            'consolidated',
+            'unitBreakdown',
         ));
     }
 }

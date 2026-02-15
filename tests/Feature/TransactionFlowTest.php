@@ -9,6 +9,7 @@ use App\Models\StudentCategory;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\ReceiptService;
+use Database\Seeders\UnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -17,10 +18,17 @@ class TransactionFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(UnitSeeder::class);
+    }
+
     public function test_user_can_create_income_transaction_with_multiple_items(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
+        session(['current_unit_id' => $user->unit_id]);
 
         $this->mock(ReceiptService::class, function (MockInterface $mock): void {
             $mock->shouldReceive('generate')->once()->andReturn('receipts/mock.pdf');
@@ -94,6 +102,7 @@ class TransactionFlowTest extends TestCase
     {
         $user = User::factory()->create(['name' => 'Admin TU']);
         $this->actingAs($user);
+        session(['current_unit_id' => $user->unit_id]);
 
         $class = SchoolClass::query()->create([
             'name' => '2A',
@@ -145,7 +154,7 @@ class TransactionFlowTest extends TestCase
         $this->get(route('receipts.print', $transaction))
             ->assertOk()
             ->assertSee('A5 landscape', false)
-            ->assertSee('Header Logo', false)
+            ->assertSee('RECEIPT PEMBAYARAN', false)
             ->assertSee('Digital Signature', false)
             ->assertSee('Admin TU', false);
     }

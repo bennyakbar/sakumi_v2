@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\StudentCategory;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,6 +16,7 @@ class StudentCategoryFactory extends Factory
     public function definition(): array
     {
         return [
+            'unit_id' => Unit::factory(),
             'code' => 'SC-'.fake()->unique()->numerify('###'),
             'name' => fake()->randomElement(['Reguler', 'Yatim', 'Dhuafa', 'Prestasi']),
             'description' => fake()->sentence(),

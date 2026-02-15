@@ -26,7 +26,7 @@ class UpdateCategoryRequest extends BaseRequest
         $categoryId = $this->route('category')?->id ?? $this->route('category');
 
         return [
-            'code' => ['required', 'string', 'max:20', Rule::unique('student_categories', 'code')->ignore($categoryId)],
+            'code' => ['required', 'string', 'max:20', $this->unitUnique('student_categories', 'code')->ignore($categoryId)],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'discount_percentage' => ['required', 'numeric', 'between:0,100'],

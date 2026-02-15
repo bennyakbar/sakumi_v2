@@ -14,7 +14,8 @@ class InvoiceService
     {
         $year = now()->year;
 
-        $last = Invoice::whereYear('created_at', $year)
+        $last = Invoice::withoutGlobalScope('unit')
+            ->whereYear('created_at', $year)
             ->lockForUpdate()
             ->orderByDesc('id')
             ->value('invoice_number');

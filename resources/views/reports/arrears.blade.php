@@ -42,9 +42,19 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if($consolidated ?? false)
+                            <input type="hidden" name="scope" value="all">
+                        @endif
                         <x-primary-button>
                             {{ __('Filter') }}
                         </x-primary-button>
+
+                        @if(auth()->user()->hasRole('super_admin'))
+                            <a href="{{ route('reports.arrears', array_merge(request()->except('scope'), ['scope' => ($scope ?? 'unit') === 'all' ? 'unit' : 'all'])) }}"
+                                class="px-4 py-2 rounded-md text-sm font-semibold uppercase {{ ($scope ?? 'unit') === 'all' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                                {{ ($scope ?? 'unit') === 'all' ? 'Current Unit' : 'All Units' }}
+                            </a>
+                        @endif
                     </form>
 
                     <div class="flex justify-between items-center mb-4 bg-red-50 p-4 rounded-lg border border-red-100">
@@ -53,6 +63,9 @@
                             <span
                                 class="font-bold text-red-900">{{ DateTime::createFromFormat('!m', $month)->format('F') }}
                                 {{ $year }}</span>
+                            @if($consolidated ?? false)
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">All Units</span>
+                            @endif
                         </div>
                     </div>
 
@@ -60,6 +73,11 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    @if($consolidated ?? false)
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Unit</th>
+                                    @endif
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Student</th>
@@ -80,6 +98,10 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($arrears as $arrear)
                                     <tr>
+                                        @if($consolidated ?? false)
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $arrear->unit->code ?? '-' }}</td>
+                                        @endif
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {{ $arrear->student->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -89,15 +111,13 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600 text-right">
                                             Rp {{ number_format($arrear->amount, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{-- Action to pay would go here, maybe link to transaction create with
-                                            pre-filled data --}}
                                             <a href="{{ route('transactions.create', ['student_id' => $arrear->student_id]) }}"
                                                 class="text-indigo-600 hover:text-indigo-900">Pay Now</a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5"
+                                        <td colspan="{{ ($consolidated ?? false) ? 6 : 5 }}"
                                             class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No arrears
                                             found for this period.</td>
                                     </tr>

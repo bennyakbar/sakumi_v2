@@ -26,7 +26,7 @@ class UpdateFeeTypeRequest extends BaseRequest
         $feeTypeId = $this->route('fee_type')?->id ?? $this->route('fee_type');
 
         return [
-            'code' => ['required', 'string', 'max:20', Rule::unique('fee_types', 'code')->ignore($feeTypeId)],
+            'code' => ['required', 'string', 'max:20', $this->unitUnique('fee_types', 'code')->ignore($feeTypeId)],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'is_monthly' => ['sometimes', 'boolean'],

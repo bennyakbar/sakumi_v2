@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,9 +11,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class StudentCategory extends Model
 {
-    use HasFactory, LogsActivity;
+    use BelongsToUnit, HasFactory, LogsActivity;
 
     protected $fillable = [
+        'unit_id',
         'code',
         'name',
         'description',

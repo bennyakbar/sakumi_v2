@@ -19,7 +19,7 @@ class StoreClassRequest extends BaseRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('classes')->where(fn ($query) => $query->where('academic_year', $this->input('academic_year'))),
+                $this->unitUnique('classes', 'name')->where('academic_year', $this->input('academic_year')),
             ],
             'level' => ['required', 'integer', 'between:1,6'],
             'academic_year' => ['required', 'regex:/^\d{4}\/\d{4}$/'],

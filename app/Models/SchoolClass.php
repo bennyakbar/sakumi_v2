@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,11 +11,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class SchoolClass extends Model
 {
-    use HasFactory, LogsActivity;
+    use BelongsToUnit, HasFactory, LogsActivity;
 
     protected $table = 'classes';
 
     protected $fillable = [
+        'unit_id',
         'name',
         'level',
         'academic_year',

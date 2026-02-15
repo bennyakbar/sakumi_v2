@@ -11,6 +11,7 @@ use App\Models\StudentObligation;
 use App\Services\InvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -85,10 +86,12 @@ class InvoiceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $unitId = session('current_unit_id');
+
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_id' => ['required', Rule::exists('students', 'id')->where('unit_id', $unitId)],
             'obligation_ids' => 'required|array|min:1',
-            'obligation_ids.*' => 'exists:student_obligations,id',
+            'obligation_ids.*' => Rule::exists('student_obligations', 'id')->where('unit_id', $unitId),
             'due_date' => 'required|date|after_or_equal:today',
             'notes' => 'nullable|string|max:1000',
             'period_type' => 'nullable|in:monthly,annual',
@@ -126,12 +129,14 @@ class InvoiceController extends Controller
 
     public function runGeneration(Request $request): RedirectResponse
     {
+        $unitId = session('current_unit_id');
+
         $validated = $request->validate([
             'period_type' => 'required|in:monthly,annual',
             'period_identifier' => 'required|string|max:30',
             'due_date' => 'required|date|after_or_equal:today',
-            'class_id' => 'nullable|exists:classes,id',
-            'category_id' => 'nullable|exists:student_categories,id',
+            'class_id' => ['nullable', Rule::exists('classes', 'id')->where('unit_id', $unitId)],
+            'category_id' => ['nullable', Rule::exists('student_categories', 'id')->where('unit_id', $unitId)],
         ]);
 
         try {

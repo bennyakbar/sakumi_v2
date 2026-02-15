@@ -6,13 +6,23 @@ use App\Models\FeeMatrix;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
 use App\Models\StudentCategory;
+use App\Models\Unit;
 use App\Services\FeeMatrixService;
+use Database\Seeders\UnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class FeeMatrixServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(UnitSeeder::class);
+        $unit = Unit::where('code', 'MI')->first();
+        session(['current_unit_id' => $unit->id]);
+    }
 
     public function test_it_resolves_most_specific_fee_matrix(): void
     {

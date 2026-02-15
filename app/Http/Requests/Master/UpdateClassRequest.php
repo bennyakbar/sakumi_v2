@@ -21,9 +21,7 @@ class UpdateClassRequest extends BaseRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('classes')
-                    ->ignore($classId)
-                    ->where(fn ($query) => $query->where('academic_year', $this->input('academic_year'))),
+                $this->unitUnique('classes', 'name')->ignore($classId)->where('academic_year', $this->input('academic_year')),
             ],
             'level' => ['required', 'integer', 'between:1,6'],
             'academic_year' => ['required', 'regex:/^\d{4}\/\d{4}$/'],

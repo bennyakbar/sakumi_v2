@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,8 @@ class FixedLoginSeeder extends Seeder
     public function run(): void
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        $defaultUnitId = Unit::query()->where('code', 'MI')->value('id')
+            ?? Unit::query()->orderBy('id')->value('id');
 
         $adminTuRole = Role::firstOrCreate(['name' => 'admin_tu']);
         $staffRole = Role::firstOrCreate(['name' => 'staff']);
@@ -44,6 +47,7 @@ class FixedLoginSeeder extends Seeder
                 'name' => 'Admin TU',
                 'password' => Hash::make('AdminTU#2026'),
                 'is_active' => true,
+                'unit_id' => $defaultUnitId,
             ]
         );
         $adminTuUser->syncRoles([$adminTuRole->name, 'super_admin']);
@@ -54,6 +58,7 @@ class FixedLoginSeeder extends Seeder
                 'name' => 'Staff',
                 'password' => Hash::make('Staff#2026'),
                 'is_active' => true,
+                'unit_id' => $defaultUnitId,
             ]
         );
         $staffUser->syncRoles([$staffRole->name, 'operator_tu']);
@@ -64,6 +69,7 @@ class FixedLoginSeeder extends Seeder
                 'name' => 'Bendahara',
                 'password' => Hash::make('Bendahara#2026'),
                 'is_active' => true,
+                'unit_id' => $defaultUnitId,
             ]
         );
         $bendaharaUser->syncRoles(['bendahara']);
@@ -74,6 +80,7 @@ class FixedLoginSeeder extends Seeder
                 'name' => 'Kepala Sekolah',
                 'password' => Hash::make('KepalaSekolah#2026'),
                 'is_active' => true,
+                'unit_id' => $defaultUnitId,
             ]
         );
         $kepalaSekolahUser->syncRoles(['kepala_sekolah']);

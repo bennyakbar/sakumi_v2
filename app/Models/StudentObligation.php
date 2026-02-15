@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StudentObligation extends Model
 {
-    use HasFactory;
+    use BelongsToUnit, HasFactory;
 
     protected $fillable = [
+        'unit_id',
         'student_id',
         'fee_type_id',
         'month',

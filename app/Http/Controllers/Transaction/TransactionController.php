@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
+use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Transaction;
 use App\Models\FeeType;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -21,13 +23,48 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $transactions = Transaction::with(['student.schoolClass', 'items', 'creator'])
-            ->latest()
-            ->paginate(10);
+        $query = Transaction::with(['student.schoolClass', 'items', 'creator']);
 
-        return view('transactions.index', compact('transactions'));
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search): void {
+                $q->where('transaction_number', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('student', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', (string) $request->input('status'));
+        }
+
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', (string) $request->input('payment_method'));
+        }
+
+        if ($request->filled('class_id')) {
+            $classId = (int) $request->input('class_id');
+            $query->whereHas('student', fn ($sq) => $sq->where('class_id', $classId));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('transaction_date', '>=', (string) $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('transaction_date', '<=', (string) $request->input('date_to'));
+        }
+
+        $transactions = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $classes = SchoolClass::query()->orderBy('name')->get(['id', 'name']);
+
+        return view('transactions.index', compact('transactions', 'classes'));
     }
 
     /**
@@ -46,13 +83,15 @@ class TransactionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $unitId = session('current_unit_id');
+
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_id' => ['required', Rule::exists('students', 'id')->where('unit_id', $unitId)],
             'transaction_date' => 'required|date',
             'payment_method' => 'required|in:cash,transfer,qris',
             'description' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.fee_type_id' => 'required|exists:fee_types,id',
+            'items.*.fee_type_id' => ['required', Rule::exists('fee_types', 'id')->where('unit_id', $unitId)],
             'items.*.amount' => 'required|numeric|gt:0',
             'items.*.description' => 'nullable|string',
         ]);

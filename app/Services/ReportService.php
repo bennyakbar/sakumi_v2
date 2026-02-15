@@ -66,7 +66,7 @@ class ReportService
         ];
     }
 
-    public function getChartData(int $months = 6): array
+    public function getChartData(int $months = 6, bool $consolidated = false): array
     {
         $labels = [];
         $incomeData = [];
@@ -76,20 +76,23 @@ class ReportService
             $date = now()->subMonths($i);
             $labels[] = $date->translatedFormat('M Y');
 
-            $income = Transaction::where('status', 'completed')
+            $incomeQuery = Transaction::where('status', 'completed')
                 ->where('type', 'income')
                 ->whereMonth('transaction_date', $date->month)
-                ->whereYear('transaction_date', $date->year)
-                ->sum('total_amount');
+                ->whereYear('transaction_date', $date->year);
 
-            $expense = Transaction::where('status', 'completed')
+            $expenseQuery = Transaction::where('status', 'completed')
                 ->where('type', 'expense')
                 ->whereMonth('transaction_date', $date->month)
-                ->whereYear('transaction_date', $date->year)
-                ->sum('total_amount');
+                ->whereYear('transaction_date', $date->year);
 
-            $incomeData[] = $income;
-            $expenseData[] = $expense;
+            if ($consolidated) {
+                $incomeQuery->withoutGlobalScope('unit');
+                $expenseQuery->withoutGlobalScope('unit');
+            }
+
+            $incomeData[] = $incomeQuery->sum('total_amount');
+            $expenseData[] = $expenseQuery->sum('total_amount');
         }
 
         return compact('labels', 'incomeData', 'expenseData');

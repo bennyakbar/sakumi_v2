@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Student;
 use App\Models\Transaction;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,6 +23,7 @@ class TransactionFactory extends Factory
         $cancelledAt = $status === 'cancelled' ? fake()->dateTimeBetween('-6 months', 'now') : null;
 
         return [
+            'unit_id' => Unit::factory(),
             'transaction_number' => 'TRX-'.fake()->unique()->numerify('##########'),
             'transaction_date' => fake()->dateTimeBetween('-12 months', 'now')->format('Y-m-d'),
             'type' => fake()->randomElement(['income', 'expense']),

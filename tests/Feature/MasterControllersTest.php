@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\StudentCategory;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\UnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,11 +21,13 @@ class MasterControllersTest extends TestCase
     {
         parent::setUp();
 
+        $this->seed(UnitSeeder::class);
         $this->seed(RolePermissionSeeder::class);
 
         $user = User::factory()->create();
         $user->assignRole('super_admin');
         $this->actingAs($user);
+        session(['current_unit_id' => $user->unit_id]);
     }
 
     public function test_master_pages_can_be_rendered(): void

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentCategory;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
+            'unit_id' => Unit::factory(),
             'nis' => fake()->unique()->numerify('25########'),
             'nisn' => fake()->unique()->numerify('##########'),
             'name' => fake()->name(),

@@ -50,6 +50,11 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        // Set unit context on successful login
+        if ($unitId = Auth::user()->unit_id) {
+            session(['current_unit_id' => $unitId]);
+        }
     }
 
     /**

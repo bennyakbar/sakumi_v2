@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -39,11 +40,16 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'unit_id' => Unit::where('is_active', true)->value('id'),
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        if ($user->unit_id) {
+            session(['current_unit_id' => $user->unit_id]);
+        }
 
         return redirect(route('dashboard', absolute: false));
     }

@@ -24,7 +24,7 @@ class StoreCategoryRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:20', Rule::unique('student_categories', 'code')],
+            'code' => ['required', 'string', 'max:20', $this->unitUnique('student_categories', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'discount_percentage' => ['required', 'numeric', 'between:0,100'],

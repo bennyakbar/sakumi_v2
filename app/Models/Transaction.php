@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Transaction extends Model
 {
-    use HasFactory, LogsActivity;
+    use BelongsToUnit, HasFactory, LogsActivity;
 
     protected $appends = [
         'code',
@@ -19,6 +20,7 @@ class Transaction extends Model
     ];
 
     protected $fillable = [
+        'unit_id',
         'transaction_number',
         'transaction_date',
         'type',

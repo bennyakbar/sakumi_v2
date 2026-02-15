@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Account;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class AccountFactory extends Factory
         $opening = fake()->randomFloat(2, 0, 50000000);
 
         return [
+            'unit_id' => Unit::factory(),
             'code' => 'ACC-'.fake()->unique()->numerify('#####'),
             'name' => fake()->company().' '.ucfirst($type),
             'type' => $type,

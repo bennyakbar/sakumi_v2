@@ -24,7 +24,7 @@ class StoreFeeTypeRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:20', Rule::unique('fee_types', 'code')],
+            'code' => ['required', 'string', 'max:20', $this->unitUnique('fee_types', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'is_monthly' => ['sometimes', 'boolean'],

@@ -21,6 +21,73 @@
                         @endcan
                     </div>
 
+                    <form method="GET" action="{{ route('transactions.index') }}"
+                        class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                        <div class="lg:col-span-2">
+                            <label for="search" class="block text-xs font-semibold text-gray-600 mb-1">Search</label>
+                            <input id="search" name="search" type="text" value="{{ request('search') }}"
+                                placeholder="Code / Student / Description"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+
+                        <div>
+                            <label for="status" class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+                            <select id="status" name="status"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">All</option>
+                                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                                <option value="cancelled" @selected(request('status') === 'cancelled')>Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="payment_method" class="block text-xs font-semibold text-gray-600 mb-1">Payment</label>
+                            <select id="payment_method" name="payment_method"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">All</option>
+                                <option value="cash" @selected(request('payment_method') === 'cash')>Cash</option>
+                                <option value="transfer" @selected(request('payment_method') === 'transfer')>Transfer</option>
+                                <option value="qris" @selected(request('payment_method') === 'qris')>QRIS</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="class_id" class="block text-xs font-semibold text-gray-600 mb-1">Class</label>
+                            <select id="class_id" name="class_id"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">All</option>
+                                @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}" @selected((string) request('class_id') === (string) $class->id)>
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="date_from" class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
+                            <input id="date_from" name="date_from" type="date" value="{{ request('date_from') }}"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+
+                        <div>
+                            <label for="date_to" class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
+                            <input id="date_to" name="date_to" type="date" value="{{ request('date_to') }}"
+                                class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        </div>
+
+                        <div class="lg:col-span-6 flex gap-2">
+                            <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                                Filter
+                            </button>
+                            <a href="{{ route('transactions.index') }}"
+                                class="px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">

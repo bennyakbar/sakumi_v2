@@ -14,9 +14,9 @@ class StoreFeeMatrixRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'fee_type_id' => ['required', 'exists:fee_types,id'],
-            'class_id' => ['nullable', 'exists:classes,id'],
-            'category_id' => ['nullable', 'exists:student_categories,id'],
+            'fee_type_id' => ['required', $this->unitExists('fee_types')],
+            'class_id' => ['nullable', $this->unitExists('classes')],
+            'category_id' => ['nullable', $this->unitExists('student_categories')],
             'amount' => ['required', 'numeric', 'gt:0'],
             'effective_from' => ['required', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],

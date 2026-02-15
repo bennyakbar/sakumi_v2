@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\StudentCategory;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Database\Seeders\UnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -19,14 +20,14 @@ class StudentImportTest extends TestCase
     {
         parent::setUp();
 
-        // Seed roles and permissions
+        $this->seed(UnitSeeder::class);
         $this->seed(RolePermissionSeeder::class);
 
-        // Create a user with permission
         $user = User::factory()->create();
         $user->assignRole('super_admin');
 
         $this->actingAs($user);
+        session(['current_unit_id' => $user->unit_id]);
     }
 
     public function test_import_page_can_be_rendered()

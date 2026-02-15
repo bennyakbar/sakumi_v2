@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,9 +13,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Student extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use BelongsToUnit, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
+        'unit_id',
         'nis',
         'nisn',
         'name',

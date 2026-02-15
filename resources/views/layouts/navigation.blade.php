@@ -124,8 +124,42 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Unit Switcher + Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 sm:gap-3">
+                {{-- Unit Indicator / Switcher --}}
+                @if(isset($currentUnit))
+                    @if(isset($switchableUnits) && $switchableUnits->count() > 1)
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-1.5 border border-indigo-200 text-xs font-semibold rounded-full text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none transition ease-in-out duration-150">
+                                    <div>{{ $currentUnit->code }}</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                @foreach($switchableUnits as $unit)
+                                    <form method="POST" action="{{ route('unit.switch') }}">
+                                        @csrf
+                                        <input type="hidden" name="unit_id" value="{{ $unit->id }}">
+                                        <button type="submit" class="block w-full px-4 py-2 text-start text-sm leading-5 {{ $unit->id === $currentUnit->id ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100' }} focus:outline-none transition duration-150 ease-in-out">
+                                            {{ $unit->code }} &mdash; {{ $unit->name }}
+                                        </button>
+                                    </form>
+                                @endforeach
+                            </x-slot>
+                        </x-dropdown>
+                    @else
+                        <span class="inline-flex items-center px-3 py-1.5 border border-gray-200 text-xs font-semibold rounded-full text-gray-600 bg-gray-50">
+                            {{ $currentUnit->code }}
+                        </span>
+                    @endif
+                @endif
+
+                {{-- User Profile Dropdown --}}
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
@@ -261,6 +295,24 @@
                 @endcan
             @endif
         </div>
+
+        {{-- Responsive Unit Switcher --}}
+        @if(isset($currentUnit))
+            <div class="pt-2 pb-1 border-t border-gray-200">
+                <div class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit: {{ $currentUnit->code }}</div>
+            </div>
+            @if(isset($switchableUnits) && $switchableUnits->count() > 1)
+                @foreach($switchableUnits as $unit)
+                    <form method="POST" action="{{ route('unit.switch') }}">
+                        @csrf
+                        <input type="hidden" name="unit_id" value="{{ $unit->id }}">
+                        <button type="submit" class="block w-full ps-4 pe-4 py-2 text-start text-base font-medium {{ $unit->id === $currentUnit->id ? 'text-indigo-700 bg-indigo-50 border-l-4 border-indigo-400' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50' }} focus:outline-none transition duration-150 ease-in-out">
+                            {{ $unit->code }} &mdash; {{ $unit->name }}
+                        </button>
+                    </form>
+                @endforeach
+            @endif
+        @endif
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">

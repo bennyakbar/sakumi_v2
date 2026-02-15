@@ -14,11 +14,11 @@ class StoreStudentRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'nis' => ['required', 'string', 'max:20', 'unique:students,nis'],
-            'nisn' => ['nullable', 'string', 'max:20', 'unique:students,nisn'],
+            'nis' => ['required', 'string', 'max:20', $this->unitUnique('students', 'nis')],
+            'nisn' => ['nullable', 'string', 'max:20', $this->unitUnique('students', 'nisn')],
             'name' => ['required', 'string', 'max:255'],
-            'class_id' => ['required', 'exists:classes,id'],
-            'category_id' => ['required', 'exists:student_categories,id'],
+            'class_id' => ['required', $this->unitExists('classes')],
+            'category_id' => ['required', $this->unitExists('student_categories')],
             'gender' => ['required', 'in:L,P'],
             'birth_date' => ['nullable', 'date'],
             'birth_place' => ['nullable', 'string', 'max:100'],

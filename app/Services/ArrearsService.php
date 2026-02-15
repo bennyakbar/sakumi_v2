@@ -34,6 +34,7 @@ class ArrearsService
             foreach ($feeEntries as $entry) {
                 $inserted = DB::table('student_obligations')
                     ->insertOrIgnore([
+                        'unit_id' => $student->unit_id,
                         'student_id' => $student->id,
                         'fee_type_id' => $entry->fee_type_id,
                         'month' => $month,

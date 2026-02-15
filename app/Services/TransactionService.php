@@ -20,7 +20,8 @@ class TransactionService
         $prefix = $type === 'income' ? 'NF' : 'NK';
         $year = now()->year;
 
-        $last = Transaction::where('type', $type)
+        $last = Transaction::withoutGlobalScope('unit')
+            ->where('type', $type)
             ->whereYear('created_at', $year)
             ->lockForUpdate()
             ->orderByDesc('id')

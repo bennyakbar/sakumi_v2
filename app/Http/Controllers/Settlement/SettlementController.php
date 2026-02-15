@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Services\SettlementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -58,15 +59,17 @@ class SettlementController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $unitId = session('current_unit_id');
+
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_id' => ['required', Rule::exists('students', 'id')->where('unit_id', $unitId)],
             'payment_date' => 'required|date',
             'payment_method' => 'required|in:cash,transfer,qris',
             'total_amount' => 'required|numeric|gt:0',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:1000',
             'allocations' => 'required|array|min:1',
-            'allocations.*.invoice_id' => 'required|exists:invoices,id',
+            'allocations.*.invoice_id' => ['required', Rule::exists('invoices', 'id')->where('unit_id', $unitId)],
             'allocations.*.amount' => 'required|numeric|min:0',
         ]);
 

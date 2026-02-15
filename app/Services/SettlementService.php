@@ -13,7 +13,8 @@ class SettlementService
     {
         $year = now()->year;
 
-        $last = Settlement::whereYear('created_at', $year)
+        $last = Settlement::withoutGlobalScope('unit')
+            ->whereYear('created_at', $year)
             ->lockForUpdate()
             ->orderByDesc('id')
             ->value('settlement_number');
