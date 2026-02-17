@@ -98,9 +98,9 @@
                             </div>
                         </div>
 
-                        <!-- Transaction List (Simplified) -->
+                        <!-- Unified Entry List -->
                         <div class="lg:col-span-2">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Latest Transactions</h3>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">All Entries</h3>
                             <div class="bg-white border rounded-lg overflow-hidden">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
@@ -115,6 +115,9 @@
                                                 Date</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Source</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Code</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -125,27 +128,43 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
-                                        @forelse($transactions as $transaction)
-                                            <tr>
+                                        @forelse($entries as $entry)
+                                            <tr class="{{ $entry->type === 'expense' ? 'bg-red-50' : '' }}">
                                                 @if($consolidated ?? false)
                                                     <td class="px-6 py-3 text-sm text-gray-500">
-                                                        {{ $transaction->unit->code ?? '-' }}</td>
+                                                        {{ $entry->unit_code ?? '-' }}</td>
                                                 @endif
                                                 <td class="px-6 py-3 text-sm text-gray-500">
-                                                    {{ $transaction->transaction_date->format('d/m/Y') }}</td>
-                                                <td class="px-6 py-3 text-sm font-medium text-indigo-600 hover:underline">
-                                                    <a
-                                                        href="{{ route('transactions.show', $transaction) }}">{{ $transaction->code }}</a>
+                                                    {{ $entry->date->format('d/m/Y') }}</td>
+                                                <td class="px-6 py-3 text-sm text-gray-500">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $entry->model_type === 'settlement' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                                        {{ $entry->source }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-3 text-sm font-medium">
+                                                    @if($entry->model_type === 'settlement')
+                                                        @can('settlements.view')
+                                                            <a href="{{ route('settlements.show', $entry->model) }}" class="text-indigo-600 hover:underline">{{ $entry->code }}</a>
+                                                        @else
+                                                            {{ $entry->code }}
+                                                        @endcan
+                                                    @else
+                                                        @can('transactions.view')
+                                                            <a href="{{ route('transactions.show', $entry->model) }}" class="text-indigo-600 hover:underline">{{ $entry->code }}</a>
+                                                        @else
+                                                            {{ $entry->code }}
+                                                        @endcan
+                                                    @endif
                                                 </td>
                                                 <td class="px-6 py-3 text-sm text-gray-900">
-                                                    {{ $transaction->student->name }}</td>
-                                                <td class="px-6 py-3 text-sm text-gray-900 text-right">Rp
-                                                    {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
+                                                    {{ $entry->student_name }}</td>
+                                                <td class="px-6 py-3 text-sm text-right {{ $entry->amount < 0 ? 'text-red-600' : 'text-gray-900' }}">Rp
+                                                    {{ number_format($entry->amount, 0, ',', '.') }}</td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="{{ ($consolidated ?? false) ? 5 : 4 }}" class="px-6 py-3 text-sm text-gray-500 text-center">No
-                                                    transactions found.</td>
+                                                <td colspan="{{ ($consolidated ?? false) ? 6 : 5 }}" class="px-6 py-3 text-sm text-gray-500 text-center">No
+                                                    entries found.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

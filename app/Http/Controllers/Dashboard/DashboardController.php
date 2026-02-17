@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Settlement;
 use App\Models\StudentObligation;
 use App\Models\Transaction;
 use App\Models\Unit;
@@ -33,6 +34,13 @@ class DashboardController extends Controller
             ->whereMonth('transaction_date', now()->month)
             ->whereYear('transaction_date', now()->year);
 
+        $todaySettlementQuery = Settlement::where('status', 'completed')
+            ->whereDate('payment_date', $today);
+
+        $monthSettlementQuery = Settlement::where('status', 'completed')
+            ->whereMonth('payment_date', now()->month)
+            ->whereYear('payment_date', now()->year);
+
         $arrearsQuery = StudentObligation::where('is_paid', false);
 
         $recentQuery = Transaction::query()
@@ -43,6 +51,8 @@ class DashboardController extends Controller
         if ($consolidated) {
             $todayIncomeQuery->withoutGlobalScope('unit');
             $monthIncomeQuery->withoutGlobalScope('unit');
+            $todaySettlementQuery->withoutGlobalScope('unit');
+            $monthSettlementQuery->withoutGlobalScope('unit');
             $arrearsQuery->withoutGlobalScope('unit');
             $recentQuery->withoutGlobalScope('unit')->with([
                 'unit',
@@ -54,8 +64,8 @@ class DashboardController extends Controller
             $recentQuery->with(['student.schoolClass', 'creator']);
         }
 
-        $todayIncome = $todayIncomeQuery->sum('total_amount');
-        $monthIncome = $monthIncomeQuery->sum('total_amount');
+        $todayIncome = $todayIncomeQuery->sum('total_amount') + $todaySettlementQuery->sum('allocated_amount');
+        $monthIncome = $monthIncomeQuery->sum('total_amount') + $monthSettlementQuery->sum('allocated_amount');
         $totalArrears = $arrearsQuery->sum('amount');
         $recentTransactions = $recentQuery->get();
 
@@ -73,14 +83,25 @@ class DashboardController extends Controller
                         ->where('status', 'completed')
                         ->where('type', 'income')
                         ->whereDate('transaction_date', $today)
-                        ->sum('total_amount'),
+                        ->sum('total_amount')
+                        + Settlement::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->where('status', 'completed')
+                        ->whereDate('payment_date', $today)
+                        ->sum('allocated_amount'),
                     'month_income' => Transaction::withoutGlobalScope('unit')
                         ->where('unit_id', $unit->id)
                         ->where('status', 'completed')
                         ->where('type', 'income')
                         ->whereMonth('transaction_date', now()->month)
                         ->whereYear('transaction_date', now()->year)
-                        ->sum('total_amount'),
+                        ->sum('total_amount')
+                        + Settlement::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->where('status', 'completed')
+                        ->whereMonth('payment_date', now()->month)
+                        ->whereYear('payment_date', now()->year)
+                        ->sum('allocated_amount'),
                     'arrears' => StudentObligation::withoutGlobalScope('unit')
                         ->where('unit_id', $unit->id)
                         ->where('is_paid', false)

@@ -43,7 +43,7 @@
                             @endif
                         </div>
                         <div>
-                            <span class="text-gray-600">Total Income:</span>
+                            <span class="text-gray-600">Total Payments:</span>
                             <span class="font-bold text-xl text-green-600">Rp
                                 {{ number_format($totalAmount, 0, ',', '.') }}</span>
                         </div>
@@ -63,6 +63,9 @@
                                         Time</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Source</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Code</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -79,44 +82,61 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($transactions as $transaction)
-                                    <tr>
+                                @forelse ($entries as $entry)
+                                    <tr class="{{ ($entry['type'] ?? 'income') === 'expense' ? 'bg-red-50' : '' }}">
                                         @if($consolidated ?? false)
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $transaction->unit->code ?? '-' }}</td>
+                                                {{ $entry['unit_code'] ?? '-' }}</td>
                                         @endif
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $transaction->created_at->format('H:i') }}</td>
+                                            {{ $entry['time'] }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ ($entry['model_type'] ?? 'settlement') === 'settlement' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                                {{ $entry['source'] ?? 'Settlement' }}
+                                            </span>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <a href="{{ route('transactions.show', $transaction) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 hover:underline">{{ $transaction->code }}</a>
+                                            @if(($entry['model_type'] ?? 'settlement') === 'settlement')
+                                                @can('settlements.view')
+                                                    <a href="{{ route('settlements.show', $entry['model']) }}"
+                                                        class="text-indigo-600 hover:text-indigo-900 hover:underline">{{ $entry['code'] }}</a>
+                                                @else
+                                                    {{ $entry['code'] }}
+                                                @endcan
+                                            @else
+                                                @can('transactions.view')
+                                                    <a href="{{ route('transactions.show', $entry['model']) }}"
+                                                        class="text-indigo-600 hover:text-indigo-900 hover:underline">{{ $entry['code'] }}</a>
+                                                @else
+                                                    {{ $entry['code'] }}
+                                                @endcan
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $transaction->student->name }}</td>
+                                            {{ $entry['student'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $transaction->student->schoolClass->name ?? '-' }}</td>
+                                            {{ $entry['class'] }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500">
                                             <ul class="list-disc list-inside">
-                                                @foreach($transaction->items as $item)
-                                                    <li>{{ $item->feeType->name }}</li>
+                                                @foreach($entry['items'] as $item)
+                                                    <li>{{ $item }}</li>
                                                 @endforeach
                                             </ul>
                                         </td>
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                                            Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right {{ $entry['amount'] < 0 ? 'text-red-600' : 'text-gray-900' }}">
+                                            Rp {{ number_format($entry['amount'], 0, ',', '.') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ ($consolidated ?? false) ? 7 : 6 }}"
+                                        <td colspan="{{ ($consolidated ?? false) ? 8 : 7 }}"
                                             class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No
-                                            transactions found for this date.</td>
+                                            entries found for this date.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                             <tfoot class="bg-gray-50">
                                 <tr>
-                                    <td colspan="{{ ($consolidated ?? false) ? 6 : 5 }}"
+                                    <td colspan="{{ ($consolidated ?? false) ? 7 : 6 }}"
                                         class="px-6 py-3 text-right text-xs font-bold text-gray-900 uppercase tracking-wider">
                                         Total</td>
                                     <td

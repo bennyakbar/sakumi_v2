@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Settlement;
 use App\Models\Transaction;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -86,12 +87,17 @@ class ReportService
                 ->whereMonth('transaction_date', $date->month)
                 ->whereYear('transaction_date', $date->year);
 
+            $settlementIncomeQuery = Settlement::where('status', 'completed')
+                ->whereMonth('payment_date', $date->month)
+                ->whereYear('payment_date', $date->year);
+
             if ($consolidated) {
                 $incomeQuery->withoutGlobalScope('unit');
                 $expenseQuery->withoutGlobalScope('unit');
+                $settlementIncomeQuery->withoutGlobalScope('unit');
             }
 
-            $incomeData[] = $incomeQuery->sum('total_amount');
+            $incomeData[] = $incomeQuery->sum('total_amount') + $settlementIncomeQuery->sum('allocated_amount');
             $expenseData[] = $expenseQuery->sum('total_amount');
         }
 

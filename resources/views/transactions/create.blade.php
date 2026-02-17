@@ -59,6 +59,24 @@
                                 </select>
                             </div>
 
+                            <!-- Invoice Warning -->
+                            <div id="invoice-warning" class="md:col-span-2 hidden">
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-yellow-700">
+                                                Siswa ini memiliki invoice yang belum lunas. Transaksi income akan ditolak. Gunakan <strong>modul Settlement</strong> untuk pembayaran invoice.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Payment Method -->
                             <div>
                                 <x-input-label for="payment_method" :value="__('Payment Method')" />
@@ -122,17 +140,68 @@
     <script>
         // Simple client-side script to handle adding rows
         // Ideally we would fetch fee types from an API
-        const feeTypes = @json($feeTypes);
+        const incomeFeeTypes = @json($incomeFeeTypes);
+        const expenseFeeTypes = @json($expenseFeeTypes);
+        const studentsWithOutstandingInvoices = @json($studentsWithOutstandingInvoices);
         let itemCount = 0;
+
+        // Phase 3: Check student outstanding invoices on selection change
+        document.getElementById('student_id').addEventListener('change', function() {
+            const warning = document.getElementById('invoice-warning');
+            const studentId = parseInt(this.value);
+            if (studentId && studentsWithOutstandingInvoices.includes(studentId)) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        });
+
+        function getFeeTypesByType() {
+            const typeSelect = document.getElementById('type');
+            const isExpense = typeSelect && typeSelect.value === 'expense';
+            return isExpense ? expenseFeeTypes : incomeFeeTypes;
+        }
+
+        function buildFeeTypeOptions(selectedValue = '') {
+            const feeTypes = getFeeTypesByType();
+            const typeSelect = document.getElementById('type');
+            const isExpense = typeSelect && typeSelect.value === 'expense';
+
+            if (!isExpense) {
+                let incomeOptions = '<option value="">-- Select Fee Type --</option>';
+                feeTypes.forEach(ft => {
+                    const selectedAttr = String(ft.id) === String(selectedValue) ? 'selected' : '';
+                    incomeOptions += `<option value="${ft.id}" ${selectedAttr}>${ft.name}</option>`;
+                });
+                return incomeOptions;
+            }
+
+            const grouped = {};
+            feeTypes.forEach(ft => {
+                const key = `${ft.category} | ${ft.subcategory}`;
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                grouped[key].push(ft);
+            });
+
+            let expenseOptions = '<option value="">-- Select Fee Type --</option>';
+            Object.entries(grouped).forEach(([groupLabel, groupItems]) => {
+                expenseOptions += `<optgroup label="${groupLabel.replace('|', ' /')}">`;
+                groupItems.forEach(ft => {
+                    const selectedAttr = String(ft.id) === String(selectedValue) ? 'selected' : '';
+                    expenseOptions += `<option value="${ft.id}" ${selectedAttr}>${ft.name}</option>`;
+                });
+                expenseOptions += '</optgroup>';
+            });
+
+            return expenseOptions;
+        }
 
         function addItem() {
             const container = document.getElementById('items-container');
             const rowId = itemCount++;
-
-            let optionsHtml = '<option value="">-- Select Fee Type --</option>';
-            feeTypes.forEach(ft => {
-                optionsHtml += `<option value="${ft.id}">${ft.name}</option>`;
-            });
+            const optionsHtml = buildFeeTypeOptions();
 
             const html = `
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-lg item-row" id="row-${rowId}">
@@ -163,6 +232,17 @@
             const row = document.getElementById(`row-${id}`);
             row.remove();
             calculateTotal();
+        }
+
+        function refreshAllFeeTypeOptions() {
+            document.querySelectorAll('select[name$="[fee_type_id]"]').forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = buildFeeTypeOptions(currentValue);
+
+                if (!Array.from(select.options).some(option => option.value === currentValue)) {
+                    select.value = '';
+                }
+            });
         }
 
         function calculateTotal() {
@@ -197,6 +277,8 @@
             if (submitLabel) {
                 submitLabel.textContent = isExpense ? 'Process Expense' : 'Process Income';
             }
+
+            refreshAllFeeTypeOptions();
         }
 
         toggleTransactionType();

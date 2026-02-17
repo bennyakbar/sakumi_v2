@@ -35,6 +35,11 @@ class SettlementService
      */
     public function createSettlement(array $data, array $allocations, int $userId): Settlement
     {
+        // Phase 2: Early validation — at least one allocation with amount > 0
+        if (empty($allocations) || array_sum($allocations) <= 0) {
+            throw new \InvalidArgumentException('Settlement must have at least one allocation with amount > 0');
+        }
+
         return DB::transaction(function () use ($data, $allocations, $userId) {
             $number = $this->generateSettlementNumber();
 
@@ -51,17 +56,22 @@ class SettlementService
                     continue;
                 }
 
-                $invoice = Invoice::where('id', $invoiceId)
+                // Phase 1: lockForUpdate() prevents concurrent over-allocation
+                $invoice = Invoice::lockForUpdate()
+                    ->where('id', $invoiceId)
                     ->where('student_id', $data['student_id']) // BR-07: same student only
-                    ->whereNotIn('status', ['paid', 'cancelled'])
+                    ->where('status', '!=', 'cancelled')
                     ->first();
 
                 if (!$invoice) {
                     throw new \RuntimeException("Invoice #{$invoiceId} not found, already paid, or belongs to a different student.");
                 }
 
-                // BR-06: Allocation must not exceed outstanding
-                $outstanding = (float) $invoice->total_amount - (float) $invoice->paid_amount;
+                // BR-06: Allocation must not exceed outstanding (recalculated from settlements)
+                $settledAmount = (float) $invoice->allocations()
+                    ->whereHas('settlement', fn ($q) => $q->where('status', 'completed'))
+                    ->sum('amount');
+                $outstanding = max(0, (float) $invoice->total_amount - $settledAmount);
                 if ($amount > $outstanding) {
                     throw new \RuntimeException("Allocation for invoice {$invoice->invoice_number} (Rp " . number_format($amount, 0, ',', '.') . ") exceeds outstanding (Rp " . number_format($outstanding, 0, ',', '.') . ').');
                 }

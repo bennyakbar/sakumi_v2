@@ -7,6 +7,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Transaction;
 use App\Models\FeeType;
+use App\Models\Invoice;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -73,10 +74,37 @@ class TransactionController extends Controller
     public function create(): View
     {
         $students = Student::with('schoolClass')->where('status', 'active')->get();
-        $feeTypes = FeeType::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $incomeFeeTypes = FeeType::query()
+            ->where('is_active', true)
+            ->where('code', 'not like', 'EXP-%')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        $expenseFeeTypes = FeeType::query()
+            ->with(['expenseFeeSubcategory.category'])
+            ->where('is_active', true)
+            ->whereNotNull('expense_fee_subcategory_id')
+            ->get()
+            ->sortBy(fn (FeeType $feeType): string => sprintf(
+                '%03d-%03d-%s',
+                (int) ($feeType->expenseFeeSubcategory?->category?->sort_order ?? 999),
+                (int) ($feeType->expenseFeeSubcategory?->sort_order ?? 999),
+                $feeType->name
+            ))
+            ->map(fn (FeeType $feeType): array => [
+                'id' => $feeType->id,
+                'name' => $feeType->name,
+                'category' => $feeType->expenseFeeSubcategory?->category?->name ?? 'Uncategorized',
+                'subcategory' => $feeType->expenseFeeSubcategory?->name ?? 'General',
+            ])->values();
         $canCreateExpense = auth()->user()?->can('transactions.expense.create') ?? false;
 
-        return view('transactions.create', compact('students', 'feeTypes', 'canCreateExpense'));
+        // Phase 3: Collect student IDs with outstanding invoices for client-side warning
+        $studentsWithOutstandingInvoices = Invoice::whereIn('status', ['unpaid', 'partially_paid'])
+            ->pluck('student_id')
+            ->unique()
+            ->values();
+
+        return view('transactions.create', compact('students', 'incomeFeeTypes', 'expenseFeeTypes', 'canCreateExpense', 'studentsWithOutstandingInvoices'));
     }
 
     /**
@@ -110,6 +138,18 @@ class TransactionController extends Controller
             'items.*.amount' => 'required|numeric|gt:0',
             'items.*.description' => 'nullable|string',
         ]);
+
+        // Phase 3: Hard block — reject income if student has outstanding invoices
+        if ($transactionType === 'income' && !empty($validated['student_id'])) {
+            $hasOutstandingInvoices = Invoice::where('student_id', $validated['student_id'])
+                ->whereIn('status', ['unpaid', 'partially_paid'])
+                ->exists();
+            if ($hasOutstandingInvoices) {
+                return back()->withErrors([
+                    'student_id' => 'Siswa ini memiliki invoice yang belum lunas. Gunakan modul Settlement untuk pembayaran invoice.',
+                ])->withInput();
+            }
+        }
 
         try {
             $items = collect($validated['items'])
