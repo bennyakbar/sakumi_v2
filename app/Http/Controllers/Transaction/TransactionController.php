@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class TransactionController extends Controller
@@ -24,7 +25,12 @@ class TransactionController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Transaction::with(['student.schoolClass', 'items', 'creator']);
+        $with = ['student.schoolClass', 'items', 'creator'];
+        if (Schema::hasTable('receipts')) {
+            $with[] = 'receipt';
+        }
+
+        $query = Transaction::with($with);
 
         if ($request->filled('search')) {
             $search = trim((string) $request->input('search'));
@@ -60,6 +66,11 @@ class TransactionController extends Controller
             ->latest()
             ->paginate(10)
             ->withQueryString();
+        $transactions->getCollection()->transform(function (Transaction $transaction) {
+            $transaction->setAttribute('receipt_print_count', (int) ($transaction->receipt?->print_count ?? 0));
+
+            return $transaction;
+        });
 
         $classes = SchoolClass::query()->orderBy('name')->get(['id', 'name']);
 
@@ -177,6 +188,10 @@ class TransactionController extends Controller
     public function show(Transaction $transaction): View
     {
         $transaction->load(['student.schoolClass', 'items.feeType', 'creator']);
+        if (Schema::hasTable('receipts')) {
+            $transaction->load('receipt');
+        }
+        $transaction->setAttribute('receipt_print_count', (int) ($transaction->receipt?->print_count ?? 0));
 
         return view('transactions.show', compact('transaction'));
     }

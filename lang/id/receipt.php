@@ -24,7 +24,9 @@ return [
         'transaction_type' => 'Jenis Transaksi',
         'notes'            => 'Catatan',
         'phone'            => 'Telp',
+        'issued_at'        => 'Diterbitkan pada',
         'printed_at'       => 'Dicetak pada',
+        'print_status'     => 'Status Cetak',
         'school_treasurer' => 'Bendahara Sekolah',
     ],
 

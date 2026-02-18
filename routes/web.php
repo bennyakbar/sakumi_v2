@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 
 // Public liveness probe
 Route::get('/health/live', [HealthCheckController::class, 'live']);
+Route::get('/verify-receipt/{code}', [\App\Http\Controllers\ReceiptController::class, 'verifyByCode'])
+    ->name('receipts.verify.public');
 Route::get('/receipts/verify/{transactionNumber}', [\App\Http\Controllers\ReceiptController::class, 'verify'])
     ->name('receipts.verify');
 
@@ -161,7 +163,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Transactions
-    Route::middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor')->group(function () {
+    Route::middleware('role:super_admin,admin_tu_mi,admin_tu_ra,admin_tu_dta,bendahara,kepala_sekolah,operator_tu,auditor,cashier,admin_tu')->group(function () {
         Route::get('transactions', [\App\Http\Controllers\Transaction\TransactionController::class, 'index'])
             ->middleware('can:transactions.view')
             ->name('transactions.index');

@@ -8,7 +8,8 @@
 
 ### Roles
 - Admin: system access, master data, security/audit oversight
-- Cashier: payment entry, receipt handling, settlement submission
+- Staff: general operational support (non-controlled receipt authority)
+- Cashier: payment entry, first-time receipt printing, settlement submission
 - Finance Officer: reconciliation, approvals, financial reporting
 - School Principal: executive review and approval
 
@@ -38,12 +39,15 @@ Maker (Cashier/Admin/Finance) -> Submit Request
 
 ### Segregation of Duties
 - Cashier: can post, cannot self-approve cancellation/adjustment.
+- Cashier: can print first-time receipt (`ORIGINAL`) only.
+- Reprint (`COPY`) requires reason and must be executed by Finance/Admin authority.
 - Finance Officer: can approve finance exceptions, not user-role administration.
 - Admin: can manage access, not self-approve critical security changes.
 - Principal: approves high-impact outcomes, not transactional input.
 
 ### Controls
 - Always verify Student ID + amount before submit.
+- Reprint reason is mandatory: lost, damaged, parent request, or other.
 - Never share account/password.
 - Use standard export filename:
   - `SchoolCode_ReportType_YYYYMMDD_Role.ext`
@@ -58,7 +62,8 @@ Maker (Cashier/Admin/Finance) -> Submit Request
 
 ### Peran
 - Admin: akses sistem, master data, pengawasan keamanan/audit
-- Kasir: input pembayaran, pengelolaan kuitansi, setoran harian
+- Staff: dukungan operasional umum (tanpa otoritas kuitansi terkontrol)
+- Kasir: input pembayaran, cetak pertama kuitansi, setoran harian
 - Petugas Keuangan: rekonsiliasi, persetujuan, laporan keuangan
 - Kepala Sekolah: review eksekutif dan persetujuan
 
@@ -88,12 +93,15 @@ Maker (Kasir/Admin/Keuangan) -> Ajukan Permintaan
 
 ### Pemisahan Tugas (SoD)
 - Kasir: boleh input, tidak boleh menyetujui sendiri pembatalan/penyesuaian.
+- Kasir: hanya boleh cetak kuitansi pertama (`ORIGINAL`).
+- Reprint (`COPY`) wajib alasan dan dilakukan oleh otoritas Keuangan/Admin.
 - Petugas Keuangan: boleh menyetujui exception keuangan, tidak kelola role user.
 - Admin: boleh kelola akses, tidak self-approve perubahan keamanan kritikal.
 - Kepala Sekolah: menyetujui keputusan berdampak tinggi, bukan input transaksi.
 
 ### Kontrol
 - Selalu cek NIS/NISN + nominal sebelum simpan.
+- Alasan reprint wajib diisi: hilang, rusak, permintaan orang tua, atau lainnya.
 - Dilarang berbagi akun/password.
 - Gunakan format nama file ekspor:
   - `KodeSekolah_JenisLaporan_YYYYMMDD_Role.ext`
@@ -160,7 +168,8 @@ Maker (Kasir/Admin/Keuangan) -> Ajukan Permintaan
 - Purpose: Accurately post payments and issue receipts.
 - Main responsibilities:
   - Record payment transactions
-  - Print/reprint receipts as permitted
+  - Print first-time receipts (`ORIGINAL`)
+  - Submit reprint request with reason when copy is needed
   - Submit end-of-day settlement
 
 #### Daily Workflow
@@ -202,8 +211,20 @@ Maker (Kasir/Admin/Keuangan) -> Ajukan Permintaan
 #### Controls & Best Practices
 - Two-point check: student ID + amount.
 - Never share account credentials.
-- Document reasons for reprint/void/correction.
+- Reprint is not self-authorized for cashier; escalate to Finance/Admin with reason.
 - Finish settlement before logout.
+
+### 2a) Staff
+#### Role Overview
+- Purpose: Support daily operations without controlled receipt authority.
+- Main responsibilities:
+  - Assist data entry and non-critical operations
+  - Coordinate corrections with Cashier/Admin
+  - Escalate reprint requests to authorized roles
+
+#### Controls & Best Practices
+- Do not execute receipt reprint directly.
+- Keep maker-checker references for correction requests.
 
 ### 3) Finance Officer
 #### Role Overview
@@ -332,11 +353,12 @@ Maker (Kasir/Admin/Keuangan) -> Ajukan Permintaan
 | User/Role changes | Admin | Admin Lead/Principal (policy-based) | Principal |
 | Fee/master data changes | Admin/Finance | Finance/Principal (policy-based) | Principal |
 | Payment posting | Cashier | Finance (reconciliation) | Principal (summary) |
-| Reprint/void/cancel | Cashier/Finance (request) | Finance/Admin (approve) | Admin + Principal |
+| Reprint/void/cancel | Cashier/Staff/Finance (request) | Finance/Admin (execute with mandatory reason) | Admin + Principal |
 | Daily report release | Finance | Principal | Authorized roles |
 
 ## D. Segregation of Duties (SoD)
 - Cashier records transactions, but does not self-approve exceptions.
+- Cashier prints first receipt only; copy/reprint is restricted.
 - Finance approves financial exceptions, but does not manage user roles.
 - Admin manages access/configuration, but should not self-approve critical changes.
 - Principal approves high-impact results, not transactional entries.
@@ -372,6 +394,30 @@ Checker (Finance/Admin) -> Approve or Reject
    v
 Apply Change -> Audit Trail Logged -> Principal Visibility (high-impact)
 ```
+
+## F. Role Mapping Matrix
+
+### English
+
+| Role | Primary Scope | Can Print First Receipt | Can Reprint Receipt | Reprint Reason Required | Approval/Checker Authority |
+|---|---|---|---|---|---|
+| Admin TU | Master data + finance operations | Yes | Yes | Yes | Yes |
+| Staff | Operational support | No | No | N/A | No |
+| Cashier | Payment posting counter | Yes | No | N/A | No |
+| Bendahara (Finance) | Finance control + reconciliation | Yes | Yes | Yes | Yes |
+| Kepala Sekolah | Oversight/reporting | No | No | N/A | Policy-level only |
+| Super Admin | System-wide governance | Yes | Yes | Yes | Yes |
+
+### Bahasa Indonesia
+
+| Role | Cakupan Utama | Boleh Cetak Pertama | Boleh Reprint | Alasan Reprint Wajib | Otoritas Approve/Checker |
+|---|---|---|---|---|---|
+| Admin TU | Master data + operasional keuangan | Ya | Ya | Ya | Ya |
+| Staff | Dukungan operasional | Tidak | Tidak | N/A | Tidak |
+| Kasir | Loket input pembayaran | Ya | Tidak | N/A | Tidak |
+| Bendahara | Kontrol keuangan + rekonsiliasi | Ya | Ya | Ya | Ya |
+| Kepala Sekolah | Pengawasan/laporan | Tidak | Tidak | N/A | Hanya tingkat kebijakan |
+| Super Admin | Tata kelola lintas sistem | Ya | Ya | Ya | Ya |
 
 ---
 
@@ -431,7 +477,8 @@ Apply Change -> Audit Trail Logged -> Principal Visibility (high-impact)
 - Tujuan: Input pembayaran akurat dan penerbitan kuitansi.
 - Tanggung jawab utama:
   - Input transaksi pembayaran
-  - Cetak/reprint kuitansi sesuai hak
+  - Cetak kuitansi pertama (`ORIGINAL`)
+  - Ajukan permintaan reprint bila dibutuhkan
   - Kirim settlement akhir hari
 
 #### Alur Kerja Harian
@@ -473,8 +520,20 @@ Apply Change -> Audit Trail Logged -> Principal Visibility (high-impact)
 #### Kontrol & Praktik Terbaik
 - Cek dua titik: ID siswa + nominal.
 - Jangan pernah berbagi akun.
-- Dokumentasikan alasan reprint/void/koreksi.
+- Kasir tidak boleh reprint sendiri; ajukan ke Keuangan/Admin dengan alasan.
 - Selesaikan settlement sebelum logout.
+
+### 2a) Staff
+#### Ringkasan Peran
+- Tujuan: Mendukung operasional harian tanpa otoritas kuitansi terkontrol.
+- Tanggung jawab utama:
+  - Bantu input data dan tugas operasional non-kritis
+  - Koordinasi koreksi transaksi dengan Kasir/Admin
+  - Eskalasi kebutuhan reprint ke role berwenang
+
+#### Kontrol & Praktik Terbaik
+- Tidak melakukan reprint langsung.
+- Gunakan referensi maker-checker untuk koreksi.
 
 ### 3) Petugas Keuangan
 #### Ringkasan Peran
@@ -603,11 +662,12 @@ Apply Change -> Audit Trail Logged -> Principal Visibility (high-impact)
 | Perubahan user/role | Admin | Admin Lead/Kepsek (sesuai kebijakan) | Kepsek |
 | Perubahan master data biaya | Admin/Keuangan | Keuangan/Kepsek (sesuai kebijakan) | Kepsek |
 | Posting pembayaran | Kasir | Keuangan (rekonsiliasi) | Kepsek (ringkasan) |
-| Reprint/void/batal | Kasir/Keuangan (request) | Keuangan/Admin (approve) | Admin + Kepsek |
+| Reprint/void/batal | Kasir/Staff/Keuangan (request) | Keuangan/Admin (eksekusi dengan alasan wajib) | Admin + Kepsek |
 | Publikasi laporan harian | Keuangan | Kepsek | Role berwenang |
 
 ## D. Pemisahan Tugas (SoD)
 - Kasir mencatat transaksi, tetapi tidak boleh self-approve exception.
+- Kasir hanya boleh cetak kuitansi pertama; copy/reprint dibatasi.
 - Keuangan menyetujui exception keuangan, tetapi tidak kelola role user.
 - Admin kelola akses/konfigurasi, tetapi tidak self-approve perubahan kritikal.
 - Kepsek menyetujui hasil berdampak tinggi, bukan input transaksi harian.

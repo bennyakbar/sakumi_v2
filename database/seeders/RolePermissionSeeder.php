@@ -151,5 +151,13 @@ class RolePermissionSeeder extends Seeder
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
             'audit.view',
         ]);
+
+        // Cashier — can print only first-time (reprint is guarded in service)
+        $cashier = Role::firstOrCreate(['name' => 'cashier']);
+        $cashier->syncPermissions([
+            'dashboard.view',
+            'transactions.view', 'transactions.create',
+            'receipts.view', 'receipts.print',
+        ]);
     }
 }

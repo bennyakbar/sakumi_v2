@@ -87,14 +87,94 @@
                             {{ __('app.button.back') }}
                         </a>
                         @can('receipts.print')
-                            <a href="{{ route('receipts.print', $transaction) }}" target="_blank"
+                            <button type="button"
+                                onclick="handleReceiptPrint('{{ route('receipts.print', $transaction) }}', {{ (int) ($transaction->receipt_print_count ?? 0) }})"
                                 class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
                                 {{ __('Print Receipt') }}
-                            </a>
+                            </button>
                         @endcan
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="reprint-modal" class="fixed inset-0 bg-black/40 hidden z-50 items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-lg shadow-xl">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Reprint Reason</h3>
+                <p class="text-sm text-gray-500 mt-1">Please select reason before printing a copy.</p>
+            </div>
+            <form id="reprint-form" method="GET" target="_blank" class="p-6">
+                <div>
+                    <x-input-label for="reprint_reason_type" value="Reason" />
+                    <select id="reprint_reason_type" name="reason_type"
+                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        onchange="toggleReprintOther()">
+                        <option value="lost">Lost</option>
+                        <option value="damaged">Damaged</option>
+                        <option value="parent_request">Parent Request</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div id="reprint-other-wrap" class="mt-4 hidden">
+                    <x-input-label for="reprint_reason_other" value="Other Reason" />
+                    <x-text-input id="reprint_reason_other" name="reason_other" type="text" class="mt-1 block w-full" />
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-semibold uppercase"
+                        onclick="closeReprintModal()">
+                        {{ __('app.button.close') }}
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-semibold uppercase">
+                        Continue Print
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const reprintModal = document.getElementById('reprint-modal');
+        const reprintForm = document.getElementById('reprint-form');
+        const reprintReasonType = document.getElementById('reprint_reason_type');
+        const reprintReasonOther = document.getElementById('reprint_reason_other');
+        const reprintOtherWrap = document.getElementById('reprint-other-wrap');
+
+        function handleReceiptPrint(url, printCount) {
+            if (printCount > 0) {
+                reprintForm.action = url;
+                reprintReasonType.value = 'lost';
+                reprintReasonOther.value = '';
+                toggleReprintOther();
+                reprintModal.classList.remove('hidden');
+                reprintModal.classList.add('flex');
+                return;
+            }
+
+            window.open(url, '_blank');
+        }
+
+        function toggleReprintOther() {
+            const isOther = reprintReasonType.value === 'other';
+            reprintOtherWrap.classList.toggle('hidden', !isOther);
+            reprintReasonOther.required = isOther;
+            if (!isOther) {
+                reprintReasonOther.value = '';
+            }
+        }
+
+        function closeReprintModal() {
+            reprintModal.classList.add('hidden');
+            reprintModal.classList.remove('flex');
+        }
+
+        reprintModal.addEventListener('click', function (event) {
+            if (event.target === reprintModal) {
+                closeReprintModal();
+            }
+        });
+    </script>
 </x-app-layout>

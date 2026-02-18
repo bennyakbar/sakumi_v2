@@ -62,7 +62,7 @@
 
         .header {
             display: grid;
-            grid-template-columns: 30mm 1fr;
+            grid-template-columns: 24mm 1fr 24mm;
             gap: 4mm;
             align-items: center;
             border-bottom: 1px solid var(--border);
@@ -108,13 +108,10 @@
         }
 
         .title .address {
-            white-space: normal;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            white-space: pre-line;
+            overflow: visible;
+            display: block;
             line-height: 1.15;
-            max-height: 2.3em;
         }
 
         .meta {
@@ -349,9 +346,55 @@
 <body onload="window.print()">
     @php
         $schoolName = $school_name ?? __('School');
-        $schoolAddress = $school_address ?? __('receipt.address_not_set');
+        $schoolAddress = trim(str_replace('\n', "\n", (string) ($school_address ?? '')));
+        if ($schoolAddress === '') {
+            $schoolAddress = __('receipt.address_not_set');
+        }
         $schoolPhone = $school_phone ?? '-';
         $schoolLogo = $school_logo ?? '';
+        $foundationLogo = $foundation_logo ?? '';
+        $schoolInitials = collect(preg_split('/\s+/', trim($schoolName)))
+            ->filter()
+            ->take(2)
+            ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
+            ->implode('');
+        $schoolInitials = $schoolInitials !== '' ? $schoolInitials : 'SC';
+        $toDataUri = static function (array $candidates): ?string {
+            foreach ($candidates as $path) {
+                if (!is_string($path) || $path === '' || !file_exists($path)) {
+                    continue;
+                }
+                $contents = @file_get_contents($path);
+                if ($contents === false) {
+                    continue;
+                }
+                $mime = @mime_content_type($path) ?: 'image/png';
+                return 'data:' . $mime . ';base64,' . base64_encode($contents);
+            }
+            return null;
+        };
+        $foundationLogoSrc = $toDataUri([
+            $foundationLogo !== '' ? storage_path('app/public/' . ltrim($foundationLogo, '/')) : null,
+            public_path('images/logo-yayasan.png'),
+            public_path('images/logo-yayasan.jpg'),
+            public_path('images/logo-yayasan.jpeg'),
+            public_path('images/logo-yayasan.webp'),
+            storage_path('app/public/yayasan_logo.png'),
+            storage_path('app/public/yayasan_logo.jpg'),
+            storage_path('app/public/yayasan_logo.jpeg'),
+            storage_path('app/public/yayasan_logo.webp'),
+        ]);
+        $schoolLogoSrc = $toDataUri([
+            $schoolLogo !== '' ? storage_path('app/public/' . ltrim($schoolLogo, '/')) : null,
+            public_path('images/kwitansi-logo.png'),
+            public_path('images/kwitansi-logo.jpg'),
+            public_path('images/kwitansi-logo.jpeg'),
+            public_path('images/kwitansi-logo.webp'),
+            storage_path('app/public/logo.png'),
+            storage_path('app/public/logo.jpg'),
+            storage_path('app/public/logo.jpeg'),
+            storage_path('app/public/logo.webp'),
+        ]);
         $itemCount = $invoice->items->count();
         $isCompact = $itemCount > 15;
     @endphp
@@ -359,16 +402,23 @@
     <main class="invoice {{ $isCompact ? 'compact' : '' }}">
         <section class="header">
             <div class="logo-box" aria-label="{{ __('receipt.logo_fallback') }}">
-                @if ($schoolLogo)
-                    <img src="{{ asset('storage/' . $schoolLogo) }}" alt="{{ __('receipt.logo_fallback') }} {{ $schoolName }}">
+                @if ($foundationLogoSrc)
+                    <img src="{{ $foundationLogoSrc }}" alt="Logo Yayasan">
                 @else
-                    {{ __('receipt.logo_fallback') }}
+                    YYS
                 @endif
             </div>
             <div class="title">
                 <h1>{{ __('receipt.title.invoice') }}</h1>
                 <p class="line-clip"><strong>{{ $schoolName }}</strong></p>
                 <p class="address">{!! nl2br(e($schoolAddress !== '' ? $schoolAddress : __('receipt.address_not_set'))) !!}</p>
+            </div>
+            <div class="logo-box" aria-label="{{ __('receipt.logo_fallback') }}" style="margin-left:auto;">
+                @if ($schoolLogoSrc)
+                    <img src="{{ $schoolLogoSrc }}" alt="{{ __('receipt.logo_fallback') }} {{ $schoolName }}">
+                @else
+                    {{ $schoolInitials }}
+                @endif
             </div>
         </section>
 

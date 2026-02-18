@@ -59,6 +59,7 @@ class SchoolIdentityService
 
     private function normalizeAddress(string $raw): string
     {
+        $raw = str_replace('\n', "\n", $raw);
         $normalized = preg_replace('/<\s*br\s*\/?>/i', "\n", $raw) ?? $raw;
         $normalized = strip_tags($normalized);
 

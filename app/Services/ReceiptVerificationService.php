@@ -3,26 +3,45 @@
 namespace App\Services;
 
 use App\Models\Transaction;
+use Carbon\CarbonInterface;
 
 class ReceiptVerificationService
 {
-    public function makeCode(Transaction $transaction): string
+    public function makeDeterministicCode(string $referenceId, float $amount, CarbonInterface $issuedAt): string
     {
         $payload = implode('|', [
-            $transaction->transaction_number,
-            $transaction->transaction_date?->format('Y-m-d'),
-            (string) $transaction->total_amount,
-            $transaction->type,
-            $transaction->status,
+            $referenceId,
+            number_format($amount, 2, '.', ''),
+            $issuedAt->format('Y-m-d H:i:s'),
         ]);
 
         $appKey = (string) config('app.key', 'sakumi-default-key');
         $raw = hash_hmac('sha256', $payload, $appKey);
 
-        return strtoupper(substr($raw, 0, 10));
+        return strtoupper(substr($raw, 0, 16));
     }
 
-    public function makeWatermark(Transaction $transaction): string
+    public function makeCode(Transaction $transaction): string
+    {
+        $issuedAt = $transaction->created_at ?? now();
+
+        return $this->makeDeterministicCode(
+            referenceId: 'TXN-' . (string) $transaction->id,
+            amount: (float) $transaction->total_amount,
+            issuedAt: $issuedAt,
+        );
+    }
+
+    public function makeWatermark(string $verificationCode, string $printStatus): string
+    {
+        return sprintf(
+            '%s • %s',
+            $printStatus,
+            $verificationCode,
+        );
+    }
+
+    public function makeLegacyWatermark(Transaction $transaction): string
     {
         return sprintf(
             '%s • %s • %s',
@@ -32,17 +51,17 @@ class ReceiptVerificationService
         );
     }
 
-    public function makeVerifyUrl(Transaction $transaction, string $code): string
+    public function makeVerifyUrl(string $code): string
     {
-        return route('receipts.verify', ['transactionNumber' => $transaction->transaction_number, 'code' => $code]);
+        return route('receipts.verify.public', ['code' => $code]);
     }
 
-    public function isValid(Transaction $transaction, ?string $code): bool
+    public function isValid(string $expectedCode, ?string $code): bool
     {
         if (! $code) {
             return false;
         }
 
-        return hash_equals($this->makeCode($transaction), strtoupper(trim($code)));
+        return hash_equals($expectedCode, strtoupper(trim($code)));
     }
 }

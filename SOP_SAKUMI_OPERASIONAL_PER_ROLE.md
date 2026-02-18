@@ -10,6 +10,8 @@ Dokumen ini menjadi pedoman operasional standar penggunaan aplikasi SAKUMI untuk
 ## 2. Ruang Lingkup
 SOP ini berlaku untuk role:
 - Admin TU
+- Staff
+- Kasir
 - Bendahara
 - Kepala Sekolah
 - Yayasan
@@ -29,6 +31,13 @@ Modul utama yang dicakup:
 4. `Arrears Report` hanya menampilkan invoice overdue dengan outstanding > 0.
 5. Pembatalan transaksi/pembayaran wajib melalui fitur `cancel` dengan alasan.
 6. Dilarang melakukan edit langsung data historis di database.
+7. Kontrol cetak kuitansi:
+- `issued_at` ditetapkan sekali saat dokumen resmi terbit,
+- `printed_at` berubah setiap kali cetak,
+- `print_count` bertambah setiap cetak,
+- `print_count = 1` berstatus `ORIGINAL`,
+- `print_count > 1` berstatus `COPY - Reprint #N`,
+- reprint wajib alasan (hilang, rusak, permintaan orang tua, lainnya).
 
 ## 4. Definisi Operasional
 - Invoice Total: nilai tagihan awal.
@@ -38,6 +47,16 @@ Modul utama yang dicakup:
 - Aging: umur tunggakan berdasarkan selisih hari dari due date.
 
 ## 5. SOP Per Role
+
+## 5.0 Staff
+### A. Tugas Harian
+1. Mendukung input operasional non-kritis sesuai instruksi Admin TU/Bendahara.
+2. Membantu verifikasi kelengkapan data transaksi sebelum diproses Kasir.
+3. Jika ada kebutuhan reprint, eskalasi ke Kasir/Bendahara dengan alasan tertulis.
+
+### B. Batasan Akses
+1. Staff tidak melakukan reprint kuitansi langsung.
+2. Staff tidak menyetujui sendiri pembatalan/penyesuaian transaksi.
 
 ## 5.1 Admin TU
 ### A. Tugas Harian
@@ -56,6 +75,7 @@ Modul utama yang dicakup:
 6. Akhir hari:
 - cek `Daily Report` tanggal hari ini,
 - cocokkan total pembayaran dengan bukti kas/bank.
+7. Reprint kuitansi hanya dilakukan jika alasan valid tercatat di sistem.
 
 ### B. Tugas Mingguan
 1. Bersihkan data master yang tidak valid (siswa nonaktif, kelas, kategori).
@@ -67,6 +87,7 @@ Modul utama yang dicakup:
 1. Verifikasi `Daily Report` per tanggal.
 2. Rekonsiliasi total pembayaran dengan mutasi bank/kas.
 3. Review settlement bernilai besar atau tidak lazim.
+4. Otorisasi dan eksekusi reprint kuitansi (copy) berdasarkan alasan yang terdokumentasi.
 
 ### B. Tugas Mingguan
 1. Review `Arrears Aging`:
@@ -130,10 +151,16 @@ Modul utama yang dicakup:
 - metode,
 - nominal,
 - user pembuat.
-2. Setiap pembatalan wajib:
+2. Setiap cetak kuitansi menyimpan:
+- `issued_at`,
+- `printed_at`,
+- `print_count`,
+- `verification_code`,
+- log cetak (user, waktu, IP/device, alasan bila reprint).
+3. Setiap pembatalan wajib:
 - menggunakan fitur cancel,
 - menyimpan alasan pembatalan.
-3. Seluruh laporan harus dapat ditelusuri ke dokumen sumber.
+4. Seluruh laporan harus dapat ditelusuri ke dokumen sumber.
 
 ## 8. SLA Operasional
 1. Input pembayaran: maksimal di hari yang sama saat pembayaran diterima.
@@ -154,6 +181,16 @@ Modul utama yang dicakup:
 - [ ] Seluruh pembatalan memiliki alasan valid.
 - [ ] Export laporan diarsipkan untuk audit.
 
-## 11. Penutup
-SOP ini wajib dipatuhi oleh seluruh role terkait. Perubahan proses bisnis harus diikuti pembaruan SOP dan sosialisasi ke seluruh pengguna unit.
+## 11. Role Mapping Matrix
+| Role | Cakupan Utama | Boleh Cetak Pertama | Boleh Reprint | Alasan Reprint Wajib | Otoritas Approve/Checker |
+|---|---|---|---|---|---|
+| Admin TU | Master data + operasional keuangan | Ya | Ya | Ya | Ya |
+| Staff | Dukungan operasional | Tidak | Tidak | N/A | Tidak |
+| Kasir | Loket input pembayaran | Ya | Tidak | N/A | Tidak |
+| Bendahara | Kontrol keuangan + rekonsiliasi | Ya | Ya | Ya | Ya |
+| Kepala Sekolah | Pengawasan/laporan | Tidak | Tidak | N/A | Hanya tingkat kebijakan |
+| Yayasan | Monitoring lintas unit | Tidak | Tidak | N/A | Hanya arah kebijakan |
+| Super Admin | Tata kelola lintas sistem | Ya | Ya | Ya | Ya |
 
+## 12. Penutup
+SOP ini wajib dipatuhi oleh seluruh role terkait. Perubahan proses bisnis harus diikuti pembaruan SOP dan sosialisasi ke seluruh pengguna unit.

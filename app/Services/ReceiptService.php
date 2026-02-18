@@ -25,8 +25,8 @@ class ReceiptService
             'show_logo' => getSetting('receipt_show_logo', true),
             'terbilang' => $this->terbilang($transaction->total_amount),
             'verification_code' => $verificationCode,
-            'verification_url' => $this->verificationService->makeVerifyUrl($transaction, $verificationCode),
-            'watermark_text' => $this->verificationService->makeWatermark($transaction),
+            'verification_url' => $this->verificationService->makeVerifyUrl($verificationCode),
+            'watermark_text' => $this->verificationService->makeWatermark($verificationCode, 'ORIGINAL'),
             'cancelled' => false,
             ...$school,
         ];
@@ -52,8 +52,8 @@ class ReceiptService
             'show_logo' => getSetting('receipt_show_logo', true),
             'terbilang' => $this->terbilang($transaction->total_amount),
             'verification_code' => $verificationCode,
-            'verification_url' => $this->verificationService->makeVerifyUrl($transaction, $verificationCode),
-            'watermark_text' => $this->verificationService->makeWatermark($transaction),
+            'verification_url' => $this->verificationService->makeVerifyUrl($verificationCode),
+            'watermark_text' => $this->verificationService->makeWatermark($verificationCode, 'CANCELLED'),
             'cancelled' => true,
             ...$school,
         ];

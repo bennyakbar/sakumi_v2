@@ -24,7 +24,9 @@ return [
         'transaction_type' => 'Transaction Type',
         'notes'            => 'Notes',
         'phone'            => 'Phone',
+        'issued_at'        => 'Issued At',
         'printed_at'       => 'Printed at',
+        'print_status'     => 'Print Status',
         'school_treasurer' => 'School Treasurer',
     ],
 
