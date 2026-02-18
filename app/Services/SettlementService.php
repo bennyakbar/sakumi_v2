@@ -37,7 +37,7 @@ class SettlementService
     {
         // Phase 2: Early validation — at least one allocation with amount > 0
         if (empty($allocations) || array_sum($allocations) <= 0) {
-            throw new \InvalidArgumentException('Settlement must have at least one allocation with amount > 0');
+            throw new \InvalidArgumentException(__('message.settlement_min_allocation'));
         }
 
         return DB::transaction(function () use ($data, $allocations, $userId) {
@@ -47,7 +47,7 @@ class SettlementService
 
             // BR-06: Total allocation must not exceed settlement amount
             if ($totalAllocated > (float) $data['total_amount']) {
-                throw new \RuntimeException('Total allocation (Rp ' . number_format($totalAllocated, 0, ',', '.') . ') exceeds settlement amount (Rp ' . number_format($data['total_amount'], 0, ',', '.') . ').');
+                throw new \RuntimeException(__('message.allocation_exceeds_settlement', ['allocated' => number_format($totalAllocated, 0, ',', '.'), 'total' => number_format($data['total_amount'], 0, ',', '.')]));
             }
 
             // Validate each allocation
@@ -64,7 +64,7 @@ class SettlementService
                     ->first();
 
                 if (!$invoice) {
-                    throw new \RuntimeException("Invoice #{$invoiceId} not found, already paid, or belongs to a different student.");
+                    throw new \RuntimeException(__('message.invoice_not_found', ['id' => $invoiceId]));
                 }
 
                 // BR-06: Allocation must not exceed outstanding (recalculated from settlements)
@@ -73,7 +73,7 @@ class SettlementService
                     ->sum('amount');
                 $outstanding = max(0, (float) $invoice->total_amount - $settledAmount);
                 if ($amount > $outstanding) {
-                    throw new \RuntimeException("Allocation for invoice {$invoice->invoice_number} (Rp " . number_format($amount, 0, ',', '.') . ") exceeds outstanding (Rp " . number_format($outstanding, 0, ',', '.') . ').');
+                    throw new \RuntimeException(__('message.allocation_exceeds_outstanding', ['number' => $invoice->invoice_number, 'allocated' => number_format($amount, 0, ',', '.'), 'outstanding' => number_format($outstanding, 0, ',', '.')]));
                 }
             }
 
@@ -113,10 +113,44 @@ class SettlementService
         });
     }
 
+    public function void(Settlement $settlement, int $userId, string $reason): Settlement
+    {
+        if ($settlement->isVoided()) {
+            throw new \RuntimeException(__('message.settlement_already_void'));
+        }
+
+        if ($settlement->status !== 'completed') {
+            throw new \RuntimeException(__('message.settlement_not_active', ['status' => $settlement->status]));
+        }
+
+        return DB::transaction(function () use ($settlement, $userId, $reason) {
+            $settlement->update([
+                'status' => 'void',
+                'voided_at' => now(),
+                'voided_by' => $userId,
+                'void_reason' => $reason,
+            ]);
+
+            // Recalculate all affected invoices
+            $invoiceIds = $settlement->allocations()->pluck('invoice_id')->unique();
+            foreach ($invoiceIds as $invoiceId) {
+                $invoice = Invoice::find($invoiceId);
+                if ($invoice) {
+                    $invoice->recalculateFromAllocations();
+                }
+            }
+
+            // Revert obligation payments linked to this settlement's invoices
+            $this->revertObligationsFromAllocations($settlement);
+
+            return $settlement->fresh();
+        });
+    }
+
     public function cancel(Settlement $settlement, int $userId, string $reason): Settlement
     {
         if ($settlement->isCancelled()) {
-            throw new \RuntimeException('Settlement is already cancelled.');
+            throw new \RuntimeException(__('message.settlement_already_cancelled'));
         }
 
         return DB::transaction(function () use ($settlement, $userId, $reason) {

@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Events\TransactionCreated;
-use App\Models\Student;
-use App\Models\StudentObligation;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +43,7 @@ class TransactionService
                 'transaction_number' => $number,
                 'transaction_date' => $data['transaction_date'],
                 'type' => 'income',
-                'student_id' => $data['student_id'],
+                'student_id' => null,
                 'payment_method' => $data['payment_method'] ?? 'cash',
                 'total_amount' => collect($items)->sum('amount'),
                 'description' => $data['description'] ?? null,
@@ -54,7 +52,7 @@ class TransactionService
             ]);
 
             foreach ($items as $item) {
-                $transactionItem = TransactionItem::create([
+                TransactionItem::create([
                     'transaction_id' => $transaction->id,
                     'fee_type_id' => $item['fee_type_id'],
                     'description' => $item['description'] ?? null,
@@ -62,20 +60,6 @@ class TransactionService
                     'month' => $item['month'] ?? null,
                     'year' => $item['year'] ?? null,
                 ]);
-
-                // Update obligation if monthly fee with month/year
-                if (!empty($item['month']) && !empty($item['year'])) {
-                    StudentObligation::where('student_id', $data['student_id'])
-                        ->where('fee_type_id', $item['fee_type_id'])
-                        ->where('month', $item['month'])
-                        ->where('year', $item['year'])
-                        ->update([
-                            'is_paid' => true,
-                            'paid_amount' => $item['amount'],
-                            'paid_at' => now(),
-                            'transaction_item_id' => $transactionItem->id,
-                        ]);
-                }
             }
 
             return $transaction;
@@ -124,7 +108,7 @@ class TransactionService
     public function cancel(Transaction $transaction, int $userId, string $reason): Transaction
     {
         if ($transaction->isCancelled()) {
-            throw new \RuntimeException('Transaction is already cancelled.');
+            throw new \RuntimeException(__('message.transaction_already_cancelled'));
         }
 
         $transaction->update([

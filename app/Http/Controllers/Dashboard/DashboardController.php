@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\Settlement;
-use App\Models\StudentObligation;
 use App\Models\Transaction;
 use App\Models\Unit;
 use App\Services\ReportService;
@@ -25,12 +25,23 @@ class DashboardController extends Controller
 
         $today = now()->toDateString();
 
-        $todayIncomeQuery = Transaction::where('status', 'completed')
+        $todayDirectIncomeQuery = Transaction::where('status', 'completed')
             ->where('type', 'income')
+            ->whereNull('student_id')
             ->whereDate('transaction_date', $today);
 
-        $monthIncomeQuery = Transaction::where('status', 'completed')
+        $monthDirectIncomeQuery = Transaction::where('status', 'completed')
             ->where('type', 'income')
+            ->whereNull('student_id')
+            ->whereMonth('transaction_date', now()->month)
+            ->whereYear('transaction_date', now()->year);
+
+        $todayExpenseQuery = Transaction::where('status', 'completed')
+            ->where('type', 'expense')
+            ->whereDate('transaction_date', $today);
+
+        $monthExpenseQuery = Transaction::where('status', 'completed')
+            ->where('type', 'expense')
             ->whereMonth('transaction_date', now()->month)
             ->whereYear('transaction_date', now()->year);
 
@@ -41,7 +52,14 @@ class DashboardController extends Controller
             ->whereMonth('payment_date', now()->month)
             ->whereYear('payment_date', now()->year);
 
-        $arrearsQuery = StudentObligation::where('is_paid', false);
+        $arrearsQuery = Invoice::query()
+            ->whereDate('due_date', '<', $today)
+            ->whereRaw(
+                "(invoices.total_amount - COALESCE((SELECT SUM(sa.amount) FROM settlement_allocations sa INNER JOIN settlements s ON s.id = sa.settlement_id WHERE sa.invoice_id = invoices.id AND s.status = 'completed'), 0)) > 0"
+            )
+            ->selectRaw(
+                "(invoices.total_amount - COALESCE((SELECT SUM(sa.amount) FROM settlement_allocations sa INNER JOIN settlements s ON s.id = sa.settlement_id WHERE sa.invoice_id = invoices.id AND s.status = 'completed'), 0)) as outstanding_amount"
+            );
 
         $recentQuery = Transaction::query()
             ->where('status', 'completed')
@@ -49,8 +67,10 @@ class DashboardController extends Controller
             ->limit(10);
 
         if ($consolidated) {
-            $todayIncomeQuery->withoutGlobalScope('unit');
-            $monthIncomeQuery->withoutGlobalScope('unit');
+            $todayDirectIncomeQuery->withoutGlobalScope('unit');
+            $monthDirectIncomeQuery->withoutGlobalScope('unit');
+            $todayExpenseQuery->withoutGlobalScope('unit');
+            $monthExpenseQuery->withoutGlobalScope('unit');
             $todaySettlementQuery->withoutGlobalScope('unit');
             $monthSettlementQuery->withoutGlobalScope('unit');
             $arrearsQuery->withoutGlobalScope('unit');
@@ -64,9 +84,13 @@ class DashboardController extends Controller
             $recentQuery->with(['student.schoolClass', 'creator']);
         }
 
-        $todayIncome = $todayIncomeQuery->sum('total_amount') + $todaySettlementQuery->sum('allocated_amount');
-        $monthIncome = $monthIncomeQuery->sum('total_amount') + $monthSettlementQuery->sum('allocated_amount');
-        $totalArrears = $arrearsQuery->sum('amount');
+        $todayIncome = $todaySettlementQuery->sum('allocated_amount')
+            + $todayDirectIncomeQuery->sum('total_amount')
+            - $todayExpenseQuery->sum('total_amount');
+        $monthIncome = $monthSettlementQuery->sum('allocated_amount')
+            + $monthDirectIncomeQuery->sum('total_amount')
+            - $monthExpenseQuery->sum('total_amount');
+        $totalArrears = (float) $arrearsQuery->get()->sum('outstanding_amount');
         $recentTransactions = $recentQuery->get();
 
         $chartData = $this->reportService->getChartData(6, $consolidated);
@@ -79,33 +103,55 @@ class DashboardController extends Controller
                     'name' => $unit->name,
                     'code' => $unit->code,
                     'today_income' => Transaction::withoutGlobalScope('unit')
-                        ->where('unit_id', $unit->id)
                         ->where('status', 'completed')
                         ->where('type', 'income')
+                        ->whereNull('student_id')
+                        ->where('unit_id', $unit->id)
                         ->whereDate('transaction_date', $today)
                         ->sum('total_amount')
                         + Settlement::withoutGlobalScope('unit')
-                        ->where('unit_id', $unit->id)
                         ->where('status', 'completed')
-                        ->whereDate('payment_date', $today)
-                        ->sum('allocated_amount'),
-                    'month_income' => Transaction::withoutGlobalScope('unit')
                         ->where('unit_id', $unit->id)
+                        ->whereDate('payment_date', $today)
+                        ->sum('allocated_amount')
+                        - Transaction::withoutGlobalScope('unit')
+                        ->where('status', 'completed')
+                        ->where('type', 'expense')
+                        ->where('unit_id', $unit->id)
+                        ->whereDate('transaction_date', $today)
+                        ->sum('total_amount'),
+                    'month_income' => Transaction::withoutGlobalScope('unit')
                         ->where('status', 'completed')
                         ->where('type', 'income')
+                        ->whereNull('student_id')
+                        ->where('unit_id', $unit->id)
                         ->whereMonth('transaction_date', now()->month)
                         ->whereYear('transaction_date', now()->year)
                         ->sum('total_amount')
                         + Settlement::withoutGlobalScope('unit')
-                        ->where('unit_id', $unit->id)
                         ->where('status', 'completed')
+                        ->where('unit_id', $unit->id)
                         ->whereMonth('payment_date', now()->month)
                         ->whereYear('payment_date', now()->year)
-                        ->sum('allocated_amount'),
-                    'arrears' => StudentObligation::withoutGlobalScope('unit')
+                        ->sum('allocated_amount')
+                        - Transaction::withoutGlobalScope('unit')
+                        ->where('status', 'completed')
+                        ->where('type', 'expense')
                         ->where('unit_id', $unit->id)
-                        ->where('is_paid', false)
-                        ->sum('amount'),
+                        ->whereMonth('transaction_date', now()->month)
+                        ->whereYear('transaction_date', now()->year)
+                        ->sum('total_amount'),
+                    'arrears' => (float) Invoice::withoutGlobalScope('unit')
+                        ->where('unit_id', $unit->id)
+                        ->whereDate('due_date', '<', $today)
+                        ->whereRaw(
+                            "(invoices.total_amount - COALESCE((SELECT SUM(sa.amount) FROM settlement_allocations sa INNER JOIN settlements s ON s.id = sa.settlement_id WHERE sa.invoice_id = invoices.id AND s.status = 'completed'), 0)) > 0"
+                        )
+                        ->selectRaw(
+                            "(invoices.total_amount - COALESCE((SELECT SUM(sa.amount) FROM settlement_allocations sa INNER JOIN settlements s ON s.id = sa.settlement_id WHERE sa.invoice_id = invoices.id AND s.status = 'completed'), 0)) as outstanding_amount"
+                        )
+                        ->get()
+                        ->sum('outstanding_amount'),
                 ];
             }
         }

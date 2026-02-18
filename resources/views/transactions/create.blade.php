@@ -30,9 +30,9 @@
                                 <select id="type" name="type"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
                                     required onchange="toggleTransactionType()">
-                                    <option value="income" {{ old('type', 'income') === 'income' ? 'selected' : '' }}>Income</option>
+                                    <option value="income" {{ old('type', 'income') === 'income' ? 'selected' : '' }}>{{ __('app.payment.income') }}</option>
                                     @if($canCreateExpense)
-                                        <option value="expense" {{ old('type') === 'expense' ? 'selected' : '' }}>Expense</option>
+                                        <option value="expense" {{ old('type') === 'expense' ? 'selected' : '' }}>{{ __('app.payment.expense') }}</option>
                                     @endif
                                 </select>
                             </div>
@@ -44,51 +44,15 @@
                                     name="transaction_date" :value="old('transaction_date', date('Y-m-d'))" required />
                             </div>
 
-                            <!-- Student -->
-                            <div id="student-field-wrapper">
-                                <x-input-label for="student_id" :value="__('Student')" />
-                                <select id="student_id" name="student_id"
-                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
-                                    required>
-                                    <option value="">-- Select Student --</option>
-                                    @foreach($students as $student)
-                                        <option value="{{ $student->id }}" {{ old('student_id') == $student->id ? 'selected' : '' }}>
-                                            {{ $student->name }} ({{ $student->schoolClass->name ?? '-' }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Invoice Warning -->
-                            <div id="invoice-warning" class="md:col-span-2 hidden">
-                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm text-yellow-700">
-                                                Siswa ini memiliki invoice yang belum lunas. Transaksi income akan ditolak. Gunakan <strong>modul Settlement</strong> untuk pembayaran invoice.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Payment Method -->
                             <div>
                                 <x-input-label for="payment_method" :value="__('Payment Method')" />
                                 <select id="payment_method" name="payment_method"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
                                     required>
-                                    <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>Cash
-                                    </option>
-                                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>
-                                        Transfer</option>
-                                    <option value="qris" {{ old('payment_method') === 'qris' ? 'selected' : '' }}>QRIS
-                                    </option>
+                                    <option value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'selected' : '' }}>{{ __('app.payment.cash') }}</option>
+                                    <option value="transfer" {{ old('payment_method') === 'transfer' ? 'selected' : '' }}>{{ __('app.payment.transfer') }}</option>
+                                    <option value="qris" {{ old('payment_method') === 'qris' ? 'selected' : '' }}>{{ __('app.payment.qris') }}</option>
                                 </select>
                             </div>
 
@@ -116,7 +80,7 @@
 
                         <div class="flex justify-end mt-6 border-t border-gray-200 pt-4">
                             <div class="mr-4 flex items-center">
-                                <span class="text-lg font-bold mr-2">Total:</span>
+                                <span class="text-lg font-bold mr-2">{{ __('app.label.total') }}:</span>
                                 <span class="text-xl font-bold text-indigo-600" id="grand-total">Rp 0</span>
                             </div>
                         </div>
@@ -136,25 +100,20 @@
         </div>
     </div>
 
-    <!-- Hidden Template for Fee Type Options (loaded dynamically ideally, but hardcoding for now or using a json object) -->
     <script>
-        // Simple client-side script to handle adding rows
-        // Ideally we would fetch fee types from an API
         const incomeFeeTypes = @json($incomeFeeTypes);
         const expenseFeeTypes = @json($expenseFeeTypes);
-        const studentsWithOutstandingInvoices = @json($studentsWithOutstandingInvoices);
         let itemCount = 0;
 
-        // Phase 3: Check student outstanding invoices on selection change
-        document.getElementById('student_id').addEventListener('change', function() {
-            const warning = document.getElementById('invoice-warning');
-            const studentId = parseInt(this.value);
-            if (studentId && studentsWithOutstandingInvoices.includes(studentId)) {
-                warning.classList.remove('hidden');
-            } else {
-                warning.classList.add('hidden');
-            }
-        });
+        const jsTranslations = {
+            selectFeeType: @json(__('app.placeholder.select_fee_type')),
+            feeType: @json(__('app.label.fee_type')),
+            amount: @json(__('app.label.amount')),
+            notes: @json(__('app.label.notes')),
+            remove: @json(__('app.button.remove')),
+            processExpense: @json(__('app.form.process_expense')),
+            processIncome: @json(__('app.form.process_income')),
+        };
 
         function getFeeTypesByType() {
             const typeSelect = document.getElementById('type');
@@ -168,7 +127,7 @@
             const isExpense = typeSelect && typeSelect.value === 'expense';
 
             if (!isExpense) {
-                let incomeOptions = '<option value="">-- Select Fee Type --</option>';
+                let incomeOptions = `<option value="">${jsTranslations.selectFeeType}</option>`;
                 feeTypes.forEach(ft => {
                     const selectedAttr = String(ft.id) === String(selectedValue) ? 'selected' : '';
                     incomeOptions += `<option value="${ft.id}" ${selectedAttr}>${ft.name}</option>`;
@@ -185,7 +144,7 @@
                 grouped[key].push(ft);
             });
 
-            let expenseOptions = '<option value="">-- Select Fee Type --</option>';
+            let expenseOptions = `<option value="">${jsTranslations.selectFeeType}</option>`;
             Object.entries(grouped).forEach(([groupLabel, groupItems]) => {
                 expenseOptions += `<optgroup label="${groupLabel.replace('|', ' /')}">`;
                 groupItems.forEach(ft => {
@@ -206,21 +165,21 @@
             const html = `
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-lg item-row" id="row-${rowId}">
                     <div class="md:col-span-1">
-                        <label class="block font-medium text-sm text-gray-700">Fee Type</label>
+                        <label class="block font-medium text-sm text-gray-700">${jsTranslations.feeType}</label>
                         <select name="items[${rowId}][fee_type_id]" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" required>
                             ${optionsHtml}
                         </select>
                     </div>
                     <div>
-                        <label class="block font-medium text-sm text-gray-700">Amount</label>
+                        <label class="block font-medium text-sm text-gray-700">${jsTranslations.amount}</label>
                         <input type="number" name="items[${rowId}][amount]" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full amount-input" required min="0" oninput="calculateTotal()">
                     </div>
                      <div>
-                        <label class="block font-medium text-sm text-gray-700">Notes</label>
+                        <label class="block font-medium text-sm text-gray-700">${jsTranslations.notes}</label>
                         <input type="text" name="items[${rowId}][description]" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                     </div>
                     <div class="flex items-end">
-                        <button type="button" onclick="removeRow(${rowId})" class="text-red-600 hover:text-red-900 text-sm font-semibold">Remove</button>
+                        <button type="button" onclick="removeRow(${rowId})" class="text-red-600 hover:text-red-900 text-sm font-semibold">${jsTranslations.remove}</button>
                     </div>
                 </div>
             `;
@@ -258,24 +217,11 @@
 
         function toggleTransactionType() {
             const typeSelect = document.getElementById('type');
-            const studentWrapper = document.getElementById('student-field-wrapper');
-            const studentSelect = document.getElementById('student_id');
             const submitLabel = document.getElementById('submit-label');
             const isExpense = typeSelect && typeSelect.value === 'expense';
 
-            if (studentWrapper) {
-                studentWrapper.style.display = isExpense ? 'none' : '';
-            }
-
-            if (studentSelect) {
-                studentSelect.required = !isExpense;
-                if (isExpense) {
-                    studentSelect.value = '';
-                }
-            }
-
             if (submitLabel) {
-                submitLabel.textContent = isExpense ? 'Process Expense' : 'Process Income';
+                submitLabel.textContent = isExpense ? jsTranslations.processExpense : jsTranslations.processIncome;
             }
 
             refreshAllFeeTypeOptions();

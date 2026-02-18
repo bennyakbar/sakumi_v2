@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             RolePermissionSeeder::class,
             SettingsSeeder::class,
+            UnitSchoolSettingsSeeder::class,
+            CommonExpenseFeeTypeSeeder::class,
             FixedLoginSeeder::class,
         ]);
     }

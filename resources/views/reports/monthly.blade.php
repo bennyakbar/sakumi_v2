@@ -41,23 +41,23 @@
                         @if(auth()->user()->hasRole('super_admin'))
                             <a href="{{ route('reports.monthly', array_merge(request()->except('scope'), ['scope' => ($scope ?? 'unit') === 'all' ? 'unit' : 'all'])) }}"
                                 class="px-4 py-2 rounded-md text-sm font-semibold uppercase {{ ($scope ?? 'unit') === 'all' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                                {{ ($scope ?? 'unit') === 'all' ? 'Current Unit' : 'All Units' }}
+                                {{ ($scope ?? 'unit') === 'all' ? __('app.unit.current') : __('app.unit.all') }}
                             </a>
                         @endif
                     </form>
 
                     <div class="flex justify-between items-center mb-4 bg-gray-50 p-4 rounded-lg">
                         <div>
-                            <span class="text-gray-600">Period:</span>
+                            <span class="text-gray-600">{{ __('report.period') }}</span>
                             <span
                                 class="font-bold text-gray-900">{{ DateTime::createFromFormat('!m', $month)->format('F') }}
                                 {{ $year }}</span>
                             @if($consolidated ?? false)
-                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">All Units</span>
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">{{ __('app.unit.all') }}</span>
                             @endif
                         </div>
                         <div>
-                            <span class="text-gray-600">Total Income:</span>
+                            <span class="text-gray-600">{{ __('report.net_cash') }}</span>
                             <span class="font-bold text-xl text-green-600">Rp
                                 {{ number_format($totalAmount, 0, ',', '.') }}</span>
                         </div>
@@ -66,17 +66,17 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Daily Summary Table -->
                         <div class="lg:col-span-1">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Daily Summary</h3>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('report.daily_summary') }}</h3>
                             <div class="bg-white border rounded-lg overflow-hidden">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Date</th>
+                                                {{ __('app.label.date') }}</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Total</th>
+                                                {{ __('app.label.total') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
@@ -89,8 +89,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="2" class="px-6 py-3 text-sm text-gray-500 text-center">No
-                                                    transactions.</td>
+                                                <td colspan="2" class="px-6 py-3 text-sm text-gray-500 text-center">{{ __('app.empty.transactions_short') }}</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -100,7 +99,7 @@
 
                         <!-- Unified Entry List -->
                         <div class="lg:col-span-2">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">All Entries</h3>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('report.all_entries') }}</h3>
                             <div class="bg-white border rounded-lg overflow-hidden">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
@@ -108,23 +107,23 @@
                                             @if($consolidated ?? false)
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Unit</th>
+                                                    {{ __('app.unit.unit') }}</th>
                                             @endif
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Date</th>
+                                                {{ __('app.label.date') }}</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Source</th>
+                                                {{ __('app.label.source') }}</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Code</th>
+                                                {{ __('app.label.code') }}</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Student</th>
+                                                {{ __('app.label.student') }}</th>
                                             <th scope="col"
                                                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Amount</th>
+                                                {{ __('app.label.amount') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">
@@ -163,8 +162,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="{{ ($consolidated ?? false) ? 6 : 5 }}" class="px-6 py-3 text-sm text-gray-500 text-center">No
-                                                    entries found.</td>
+                                                <td colspan="{{ ($consolidated ?? false) ? 6 : 5 }}" class="px-6 py-3 text-sm text-gray-500 text-center">{{ __('app.empty.entries') }}</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

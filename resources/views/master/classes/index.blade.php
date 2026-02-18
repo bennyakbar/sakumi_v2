@@ -27,22 +27,22 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
+                                        {{ __('app.label.name') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Level</th>
+                                        {{ __('app.label.level') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Academic Year</th>
+                                        {{ __('app.label.academic_year') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Students</th>
+                                        {{ __('app.label.student') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
+                                        {{ __('app.label.status') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -59,16 +59,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             @if($class->is_active)
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('app.status.active') }}</span>
                                             @else
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('app.status.inactive') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('master.classes.edit')
                                                 <a href="{{ route('master.classes.edit', $class) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.edit') }}</a>
                                             @endcan
                                             @can('master.classes.delete')
                                                 <form action="{{ route('master.classes.destroy', $class) }}" method="POST"
@@ -76,7 +76,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="text-red-600 hover:text-red-900">Delete</button>
+                                                        class="text-red-600 hover:text-red-900">{{ __('app.button.delete') }}</button>
                                                 </form>
                                             @endcan
                                         </td>
@@ -84,8 +84,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="6"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No classes
-                                            found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.classes') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

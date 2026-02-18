@@ -30,13 +30,13 @@
                             @can('master.students.export')
                                 <a href="{{ route('master.students.export') }}"
                                     class="px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                    {{ __('Export') }}
+                                    {{ __('app.button.export') }}
                                 </a>
                             @endcan
                             @can('master.students.import')
                                 <a href="{{ route('master.students.import') }}"
                                     class="px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                    {{ __('Import') }}
+                                    {{ __('app.button.import') }}
                                 </a>
                             @endcan
                             @can('master.students.create')
@@ -54,19 +54,19 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        NIS / NISN</th>
+                                        {{ __('app.label.nis_nisn') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
+                                        {{ __('app.label.name') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Class</th>
+                                        {{ __('app.label.class') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Category</th>
+                                        {{ __('app.label.category') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -88,17 +88,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('master.students.edit')
                                                 <a href="{{ route('master.students.show', $student) }}"
-                                                    class="text-slate-600 hover:text-slate-900 mr-3">View</a>
+                                                    class="text-slate-600 hover:text-slate-900 mr-3">{{ __('app.button.view') }}</a>
                                                 <a href="{{ route('master.students.edit', $student) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.edit') }}</a>
                                             @endcan
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="5"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No
-                                            students found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.students') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

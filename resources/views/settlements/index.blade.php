@@ -25,17 +25,17 @@
                     <form method="GET" action="{{ route('settlements.index') }}" class="mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <x-text-input name="search" class="block w-full" placeholder="Search settlement or student..." :value="request('search')" />
+                                <x-text-input name="search" class="block w-full" placeholder="{{ __('app.placeholder.search_invoice') }}" :value="request('search')" />
                             </div>
                             <div>
                                 <select name="status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full">
-                                    <option value="">All Status</option>
-                                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
-                                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    <option value="">{{ __('app.filter.all_status') }}</option>
+                                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>{{ __('app.status.completed') }}</option>
+                                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('app.status.cancelled') }}</option>
                                 </select>
                             </div>
                             <div>
-                                <x-primary-button class="w-full justify-center">{{ __('Filter') }}</x-primary-button>
+                                <x-primary-button class="w-full justify-center">{{ __('app.button.filter') }}</x-primary-button>
                             </div>
                         </div>
                     </form>
@@ -44,14 +44,14 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Settlement #</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Allocated</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Settlement #') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.date') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.student') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.method') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.amount') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.allocated') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.status') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -68,18 +68,18 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">Rp {{ number_format($settlement->allocated_amount, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             @if($settlement->status === 'completed')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('app.status.completed') }}</span>
                                             @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('app.status.cancelled') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('settlements.show', $settlement) }}" class="text-indigo-600 hover:text-indigo-900">Detail</a>
+                                            <a href="{{ route('settlements.show', $settlement) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('app.button.detail') }}</a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">No settlements found.</td>
+                                        <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">{{ __('app.empty.settlements') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

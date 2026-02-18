@@ -28,7 +28,7 @@ class CategoryController extends Controller
         StudentCategory::create($request->validated());
 
         return redirect()->route('master.categories.index')
-            ->with('success', 'Student Category created successfully.');
+            ->with('success', __('message.category_created'));
     }
 
     public function edit(StudentCategory $category): View
@@ -41,18 +41,18 @@ class CategoryController extends Controller
         $category->update($request->validated());
 
         return redirect()->route('master.categories.index')
-            ->with('success', 'Student Category updated successfully.');
+            ->with('success', __('message.category_updated'));
     }
 
     public function destroy(StudentCategory $category): RedirectResponse
     {
         if ($category->students()->exists()) {
-            return back()->with('error', 'Cannot delete category because it has associated students.');
+            return back()->with('error', __('message.category_has_students'));
         }
 
         $category->delete();
 
         return redirect()->route('master.categories.index')
-            ->with('success', 'Student Category deleted successfully.');
+            ->with('success', __('message.category_deleted'));
     }
 }

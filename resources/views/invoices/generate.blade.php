@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <p class="text-sm text-gray-500 mb-6">
-                        Batch generate invoices for all active students with unpaid obligations in the selected period.
+                        {{ __('app.form.batch_generate_desc') }}
                     </p>
 
                     @if(session('success'))
@@ -21,7 +21,7 @@
 
                     @if(session('generation_errors'))
                         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4">
-                            <p class="font-bold mb-2">Generation Errors:</p>
+                            <p class="font-bold mb-2">{{ __('app.form.generation_errors') }}</p>
                             <ul class="list-disc list-inside text-sm">
                                 @foreach(session('generation_errors') as $error)
                                     <li>{{ $error }}</li>
@@ -45,8 +45,8 @@
                                 <select id="period_type" name="period_type"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
                                     required onchange="updatePeriodField()">
-                                    <option value="monthly" {{ old('period_type', 'monthly') === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                    <option value="annual" {{ old('period_type') === 'annual' ? 'selected' : '' }}>Annual</option>
+                                    <option value="monthly" {{ old('period_type', 'monthly') === 'monthly' ? 'selected' : '' }}>{{ __('app.status.monthly') }}</option>
+                                    <option value="annual" {{ old('period_type') === 'annual' ? 'selected' : '' }}>{{ __('app.status.annual') }}</option>
                                 </select>
                             </div>
 
@@ -74,7 +74,7 @@
                                 <x-input-label for="class_id" :value="__('Class (Optional)')" />
                                 <select id="class_id" name="class_id"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
-                                    <option value="">All Classes</option>
+                                    <option value="">{{ __('app.filter.all_classes') }}</option>
                                     @foreach($classes as $class)
                                         <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
                                     @endforeach
@@ -85,7 +85,7 @@
                                 <x-input-label for="category_id" :value="__('Category (Optional)')" />
                                 <select id="category_id" name="category_id"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
-                                    <option value="">All Categories</option>
+                                    <option value="">{{ __('app.placeholder.all_categories') }}</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                                     @endforeach
@@ -96,9 +96,9 @@
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('invoices.index') }}"
                                 class="px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
-                                Back
+                                {{ __('app.button.back') }}
                             </a>
-                            <x-primary-button onclick="return confirm('This will generate invoices for all matching students. Continue?')">
+                            <x-primary-button onclick="return confirm(@json(__('app.form.confirm_generate')))">
                                 {{ __('Run Generation') }}
                             </x-primary-button>
                         </div>

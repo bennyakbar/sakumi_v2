@@ -21,7 +21,7 @@ class CheckInactivity
                 $request->session()->regenerateToken();
 
                 return redirect()->route('login')
-                    ->with('message', 'Sesi Anda telah berakhir karena tidak aktif.');
+                    ->with('message', __('message.session_expired'));
             }
 
             session(['last_activity' => now()->timestamp]);

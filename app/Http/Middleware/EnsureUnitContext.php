@@ -20,14 +20,14 @@ class EnsureUnitContext
 
         if (! session()->has('current_unit_id')) {
             if (! $user->unit_id) {
-                abort(403, 'Akun Anda belum ditetapkan ke unit manapun. Hubungi administrator.');
+                abort(403, __('message.no_unit_assigned'));
             }
             session(['current_unit_id' => $user->unit_id]);
         }
 
         $currentUnit = Unit::find(session('current_unit_id'));
 
-        $switchableUnits = $user->hasRole('super_admin')
+        $switchableUnits = $user->hasRole(['super_admin', 'bendahara'])
             ? Unit::where('is_active', true)->orderBy('code')->get()
             : collect();
 

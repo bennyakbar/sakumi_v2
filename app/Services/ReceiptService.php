@@ -8,20 +8,27 @@ use Illuminate\Support\Facades\Storage;
 
 class ReceiptService
 {
+    public function __construct(
+        private readonly ReceiptVerificationService $verificationService,
+        private readonly SchoolIdentityService $schoolIdentityService,
+    ) {}
+
     public function generate(Transaction $transaction): string
     {
         $transaction->load('items.feeType', 'student.schoolClass', 'creator');
+        $verificationCode = $this->verificationService->makeCode($transaction);
+        $school = $this->schoolIdentityService->resolve($transaction->unit_id);
 
         $data = [
             'transaction' => $transaction,
-            'school_name' => getSetting('school_name', 'Madrasah Ibtidaiyah'),
-            'school_address' => getSetting('school_address', ''),
-            'school_phone' => getSetting('school_phone', ''),
-            'school_logo' => getSetting('school_logo', ''),
             'footer_text' => getSetting('receipt_footer_text', ''),
             'show_logo' => getSetting('receipt_show_logo', true),
             'terbilang' => $this->terbilang($transaction->total_amount),
+            'verification_code' => $verificationCode,
+            'verification_url' => $this->verificationService->makeVerifyUrl($transaction, $verificationCode),
+            'watermark_text' => $this->verificationService->makeWatermark($transaction),
             'cancelled' => false,
+            ...$school,
         ];
 
         $pdf = Pdf::loadView('receipts.template', $data);
@@ -36,17 +43,19 @@ class ReceiptService
     public function generateCancelled(Transaction $transaction): string
     {
         $transaction->load('items.feeType', 'student.schoolClass', 'creator');
+        $verificationCode = $this->verificationService->makeCode($transaction);
+        $school = $this->schoolIdentityService->resolve($transaction->unit_id);
 
         $data = [
             'transaction' => $transaction,
-            'school_name' => getSetting('school_name', 'Madrasah Ibtidaiyah'),
-            'school_address' => getSetting('school_address', ''),
-            'school_phone' => getSetting('school_phone', ''),
-            'school_logo' => getSetting('school_logo', ''),
             'footer_text' => getSetting('receipt_footer_text', ''),
             'show_logo' => getSetting('receipt_show_logo', true),
             'terbilang' => $this->terbilang($transaction->total_amount),
+            'verification_code' => $verificationCode,
+            'verification_url' => $this->verificationService->makeVerifyUrl($transaction, $verificationCode),
+            'watermark_text' => $this->verificationService->makeWatermark($transaction),
             'cancelled' => true,
+            ...$school,
         ];
 
         $pdf = Pdf::loadView('receipts.template', $data);

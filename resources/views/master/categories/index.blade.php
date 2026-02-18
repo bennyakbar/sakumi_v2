@@ -27,16 +27,16 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Code</th>
+                                        {{ __('app.label.code') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
+                                        {{ __('app.label.name') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Discount</th>
+                                        {{ __('app.label.discount') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -58,7 +58,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('master.categories.edit')
                                                 <a href="{{ route('master.categories.edit', $category) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.edit') }}</a>
                                             @endcan
                                             @can('master.categories.delete')
                                                 <form action="{{ route('master.categories.destroy', $category) }}" method="POST"
@@ -67,7 +67,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="text-red-600 hover:text-red-900">Delete</button>
+                                                        class="text-red-600 hover:text-red-900">{{ __('app.button.delete') }}</button>
                                                 </form>
                                             @endcan
                                         </td>
@@ -75,8 +75,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="4"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No
-                                            categories found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.categories') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

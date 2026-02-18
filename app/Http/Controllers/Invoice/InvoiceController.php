@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\StudentCategory;
 use App\Models\StudentObligation;
 use App\Services\InvoiceService;
+use App\Services\SchoolIdentityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,7 @@ class InvoiceController extends Controller
 {
     public function __construct(
         private readonly InvoiceService $invoiceService,
+        private readonly SchoolIdentityService $schoolIdentityService,
     ) {}
 
     public function index(Request $request): View
@@ -114,10 +116,10 @@ class InvoiceController extends Controller
             );
 
             return redirect()->route('invoices.show', $invoice)
-                ->with('success', 'Invoice created: ' . $invoice->invoice_number);
+                ->with('success', __('message.invoice_created', ['number' => $invoice->invoice_number]));
         } catch (\Throwable $e) {
             Log::error('Failed to create invoice', ['message' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Failed to create invoice: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('message.invoice_create_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -151,9 +153,9 @@ class InvoiceController extends Controller
                 dueDate: $validated['due_date'],
             );
 
-            $message = "Invoice generation complete: {$result['created']} created, {$result['skipped']} skipped.";
+            $message = __('message.invoice_generation_complete', ['created' => $result['created'], 'skipped' => $result['skipped']]);
             if (!empty($result['errors'])) {
-                $message .= ' Errors: ' . count($result['errors']);
+                $message .= ' ' . __('message.invoice_generation_errors', ['count' => count($result['errors'])]);
             }
 
             $flashData = ['success' => $message];
@@ -164,15 +166,19 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.generate')->with($flashData);
         } catch (\Throwable $e) {
             Log::error('Invoice generation failed', ['message' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Generation failed: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('message.invoice_generation_failed', ['error' => $e->getMessage()]));
         }
     }
 
     public function print(Invoice $invoice): View
     {
         $invoice->load(['student.schoolClass', 'items.feeType', 'creator']);
+        $school = $this->schoolIdentityService->resolve($invoice->unit_id);
 
-        return view('invoices.print', compact('invoice'));
+        return view('invoices.print', [
+            'invoice' => $invoice,
+            ...$school,
+        ]);
     }
 
     public function destroy(Invoice $invoice): RedirectResponse
@@ -180,7 +186,7 @@ class InvoiceController extends Controller
         try {
             $this->invoiceService->cancel($invoice);
             return redirect()->route('invoices.index')
-                ->with('success', 'Invoice cancelled successfully.');
+                ->with('success', __('message.invoice_cancelled'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }

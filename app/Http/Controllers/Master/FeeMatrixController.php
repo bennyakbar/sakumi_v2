@@ -52,13 +52,13 @@ class FeeMatrixController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->withErrors(['error' => 'Fee Matrix for this combination already exists.']);
+            return back()->withInput()->withErrors(['error' => __('message.fee_matrix_exists')]);
         }
 
         FeeMatrix::create($validated);
 
         return redirect()->route('master.fee-matrix.index')
-            ->with('success', 'Fee Matrix created successfully.');
+            ->with('success', __('message.fee_matrix_created'));
     }
 
     /**
@@ -96,13 +96,13 @@ class FeeMatrixController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->withErrors(['error' => 'Fee Matrix for this combination already exists.']);
+            return back()->withInput()->withErrors(['error' => __('message.fee_matrix_exists')]);
         }
 
         $feeMatrix->update($validated);
 
         return redirect()->route('master.fee-matrix.index')
-            ->with('success', 'Fee Matrix updated successfully.');
+            ->with('success', __('message.fee_matrix_updated'));
     }
 
     /**
@@ -113,6 +113,6 @@ class FeeMatrixController extends Controller
         $feeMatrix->delete();
 
         return redirect()->route('master.fee-matrix.index')
-            ->with('success', 'Fee Matrix deleted successfully.');
+            ->with('success', __('message.fee_matrix_deleted'));
     }
 }

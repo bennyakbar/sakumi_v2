@@ -24,38 +24,38 @@
                     <form method="GET" action="{{ route('transactions.index') }}"
                         class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
                         <div class="lg:col-span-2">
-                            <label for="search" class="block text-xs font-semibold text-gray-600 mb-1">Search</label>
+                            <label for="search" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.button.search') }}</label>
                             <input id="search" name="search" type="text" value="{{ request('search') }}"
-                                placeholder="Code / Student / Description"
+                                placeholder="{{ __('app.placeholder.search_transaction') }}"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
 
                         <div>
-                            <label for="status" class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+                            <label for="status" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.label.status') }}</label>
                             <select id="status" name="status"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="">All</option>
-                                <option value="completed" @selected(request('status') === 'completed')>Completed</option>
-                                <option value="cancelled" @selected(request('status') === 'cancelled')>Cancelled</option>
+                                <option value="">{{ __('app.label.all') }}</option>
+                                <option value="completed" @selected(request('status') === 'completed')>{{ __('app.status.completed') }}</option>
+                                <option value="cancelled" @selected(request('status') === 'cancelled')>{{ __('app.status.cancelled') }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="payment_method" class="block text-xs font-semibold text-gray-600 mb-1">Payment</label>
+                            <label for="payment_method" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.label.method') }}</label>
                             <select id="payment_method" name="payment_method"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="">All</option>
-                                <option value="cash" @selected(request('payment_method') === 'cash')>Cash</option>
-                                <option value="transfer" @selected(request('payment_method') === 'transfer')>Transfer</option>
-                                <option value="qris" @selected(request('payment_method') === 'qris')>QRIS</option>
+                                <option value="">{{ __('app.label.all') }}</option>
+                                <option value="cash" @selected(request('payment_method') === 'cash')>{{ __('app.payment.cash') }}</option>
+                                <option value="transfer" @selected(request('payment_method') === 'transfer')>{{ __('app.payment.transfer') }}</option>
+                                <option value="qris" @selected(request('payment_method') === 'qris')>{{ __('app.payment.qris') }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label for="class_id" class="block text-xs font-semibold text-gray-600 mb-1">Class</label>
+                            <label for="class_id" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.label.class') }}</label>
                             <select id="class_id" name="class_id"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="">All</option>
+                                <option value="">{{ __('app.label.all') }}</option>
                                 @foreach ($classes as $class)
                                     <option value="{{ $class->id }}" @selected((string) request('class_id') === (string) $class->id)>
                                         {{ $class->name }}
@@ -65,13 +65,13 @@
                         </div>
 
                         <div>
-                            <label for="date_from" class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
+                            <label for="date_from" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.label.date_from') }}</label>
                             <input id="date_from" name="date_from" type="date" value="{{ request('date_from') }}"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
 
                         <div>
-                            <label for="date_to" class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
+                            <label for="date_to" class="block text-xs font-semibold text-gray-600 mb-1">{{ __('app.label.date_to') }}</label>
                             <input id="date_to" name="date_to" type="date" value="{{ request('date_to') }}"
                                 class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
@@ -79,11 +79,11 @@
                         <div class="lg:col-span-6 flex gap-2">
                             <button type="submit"
                                 class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                                Filter
+                                {{ __('app.button.filter') }}
                             </button>
                             <a href="{{ route('transactions.index') }}"
                                 class="px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
-                                Reset
+                                {{ __('app.button.reset') }}
                             </a>
                         </div>
                     </form>
@@ -94,25 +94,25 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date</th>
+                                        {{ __('app.label.date') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Code</th>
+                                        {{ __('app.label.code') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student</th>
+                                        {{ __('app.label.student') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Class</th>
+                                        {{ __('app.label.class') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Amount</th>
+                                        {{ __('app.label.total_amount') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
+                                        {{ __('app.label.status') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -131,10 +131,10 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             @if($transaction->status == 'completed')
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('app.status.completed') }}</span>
                                             @elseif($transaction->status == 'cancelled')
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('app.status.cancelled') }}</span>
                                             @else
                                                 <span
                                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ ucfirst($transaction->status) }}</span>
@@ -142,16 +142,16 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <a href="{{ route('transactions.show', $transaction) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Detail</a>
+                                                class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.detail') }}</a>
                                             @can('receipts.print')
                                                 <a href="{{ route('receipts.print', $transaction) }}" target="_blank"
-                                                    class="text-gray-600 hover:text-gray-900 mr-3">Receipt</a>
+                                                    class="text-gray-600 hover:text-gray-900 mr-3">{{ __('app.button.print') }}</a>
                                             @endcan
                                             @can('transactions.cancel')
                                                 @if($transaction->status != 'cancelled')
                                                     <button type="button" class="text-red-600 hover:text-red-900"
                                                         onclick="openCancellationModal('{{ route('transactions.destroy', $transaction) }}', '{{ $transaction->code }}')">
-                                                        Cancel
+                                                        {{ __('app.button.cancel') }}
                                                     </button>
                                                 @endif
                                             @endcan
@@ -160,8 +160,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="7"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No
-                                            transactions found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.transactions') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -179,7 +178,7 @@
     <div id="cancellation-modal" class="fixed inset-0 bg-black/40 hidden z-50 items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-lg shadow-xl">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Cancel Transaction</h3>
+                <h3 class="text-lg font-semibold text-gray-900">{{ __('Cancel Transaction') }}</h3>
                 <p id="cancellation-modal-subtitle" class="text-sm text-gray-500 mt-1"></p>
             </div>
 
@@ -190,18 +189,18 @@
                     <x-input-label for="cancellation_reason" :value="__('Cancellation Reason')" />
                     <textarea id="cancellation_reason" name="cancellation_reason" rows="4" required
                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                        placeholder="Enter reason for cancellation"></textarea>
+                        placeholder="{{ __('app.placeholder.cancellation_reason') }}"></textarea>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
                     <button type="button"
                         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-semibold uppercase"
                         onclick="closeCancellationModal()">
-                        Close
+                        {{ __('app.button.close') }}
                     </button>
                     <button type="submit"
                         class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-semibold uppercase">
-                        Confirm Cancel
+                        {{ __('app.button.confirm_cancel') }}
                     </button>
                 </div>
             </form>

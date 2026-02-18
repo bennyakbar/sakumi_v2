@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -15,6 +16,7 @@ class FeeType extends Model
 
     protected $fillable = [
         'unit_id',
+        'expense_fee_subcategory_id',
         'code',
         'name',
         'description',
@@ -48,5 +50,10 @@ class FeeType extends Model
     public function obligations(): HasMany
     {
         return $this->hasMany(StudentObligation::class);
+    }
+
+    public function expenseFeeSubcategory(): BelongsTo
+    {
+        return $this->belongsTo(ExpenseFeeSubcategory::class, 'expense_fee_subcategory_id');
     }
 }

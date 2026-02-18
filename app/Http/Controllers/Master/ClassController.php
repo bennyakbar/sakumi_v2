@@ -40,7 +40,7 @@ class ClassController extends Controller
         SchoolClass::create($validated);
 
         return redirect()->route('master.classes.index')
-            ->with('success', 'Class created successfully.');
+            ->with('success', __('message.class_created'));
     }
 
     /**
@@ -70,7 +70,7 @@ class ClassController extends Controller
         $class->update($validated);
 
         return redirect()->route('master.classes.index')
-            ->with('success', 'Class updated successfully.');
+            ->with('success', __('message.class_updated'));
     }
 
     /**
@@ -79,12 +79,12 @@ class ClassController extends Controller
     public function destroy(SchoolClass $class): RedirectResponse
     {
         if ($class->students()->count() > 0) {
-            return back()->with('error', 'Cannot delete class with assigned students.');
+            return back()->with('error', __('message.class_has_students'));
         }
 
         $class->delete();
 
         return redirect()->route('master.classes.index')
-            ->with('success', 'Class deleted successfully.');
+            ->with('success', __('message.class_deleted'));
     }
 }

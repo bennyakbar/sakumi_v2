@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SAKUMI - Sistem Keuangan Sekolah</title>
+    <title>SAKUMI - {{ __('welcome.title') }}</title>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -178,48 +178,45 @@
 
             <nav class="nav">
                 @auth
-                    <a href="{{ route('dashboard') }}">Dashboard</a>
+                    <a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
                 @else
-                    <a href="{{ route('login') }}">Login</a>
+                    <a href="{{ route('login') }}">{{ __('welcome.login') }}</a>
                 @endauth
             </nav>
         </header>
 
         <main class="hero">
             <section class="panel">
-                <h1>Sistem Keuangan Sekolah</h1>
-                <p class="lead">
-                    Kelola transaksi, invoice, settlement, laporan, dan master data sekolah dalam satu aplikasi.
-                    Halaman ini sudah dikustomisasi dan tidak lagi menggunakan tampilan default Laravel.
-                </p>
+                <h1>{{ __('welcome.title') }}</h1>
+                <p class="lead">{{ __('welcome.description') }}</p>
 
                 <div class="actions">
                     @auth
-                        <a class="btn btn-primary" href="{{ route('dashboard') }}">Masuk Dashboard</a>
+                        <a class="btn btn-primary" href="{{ route('dashboard') }}">{{ __('welcome.go_dashboard') }}</a>
                     @else
-                        <a class="btn btn-primary" href="{{ route('login') }}">Masuk Aplikasi</a>
+                        <a class="btn btn-primary" href="{{ route('login') }}">{{ __('welcome.login') }}</a>
                     @endauth
-                    <a class="btn btn-ghost" href="{{ url('/health/live') }}">Cek Status Sistem</a>
+                    <a class="btn btn-ghost" href="{{ url('/health/live') }}">{{ __('welcome.check_status') }}</a>
                 </div>
             </section>
 
             <aside class="panel">
                 <div class="stats">
                     <div class="stat">
-                        <div class="label">Modul</div>
-                        <div class="value">Transaksi, Invoice, Settlement</div>
+                        <div class="label">{{ __('welcome.module') }}</div>
+                        <div class="value">{{ __('welcome.module_value') }}</div>
                     </div>
                     <div class="stat">
-                        <div class="label">Unit</div>
+                        <div class="label">{{ __('welcome.unit') }}</div>
                         <div class="value">MI, RA, DTA</div>
                     </div>
                     <div class="stat">
-                        <div class="label">Data Scope</div>
-                        <div class="value">Isolasi per Unit</div>
+                        <div class="label">{{ __('welcome.data_scope') }}</div>
+                        <div class="value">{{ __('welcome.data_scope_value') }}</div>
                     </div>
                     <div class="stat">
-                        <div class="label">Akses</div>
-                        <div class="value">Role-based</div>
+                        <div class="label">{{ __('welcome.access') }}</div>
+                        <div class="value">{{ __('welcome.access_value') }}</div>
                     </div>
                 </div>
 

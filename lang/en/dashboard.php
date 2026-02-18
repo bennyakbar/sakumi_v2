@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'net_cash_today'       => "Today's Net Cash Flow",
+    'net_cash_month'       => "This Month's Net Cash Flow",
+    'total_arrears'        => 'Total Arrears',
+    'breakdown'            => 'Per-Unit Breakdown',
+    'cash_today'           => "Today's Cash Flow",
+    'cash_month'           => "This Month's Cash Flow",
+    'arrears'              => 'Arrears',
+    'chart_title'          => 'Income & Expense Chart (6 Months)',
+    'income'               => 'Income',
+    'expense'              => 'Expense',
+    'recent_transactions'  => 'Recent Transactions',
+    'no_transactions_yet'  => 'No transactions yet.',
+    'current_unit'         => 'Current Unit',
+    'all_units'            => 'All Units',
+    'view_all'             => 'View All',
+    'table_date'           => 'Date',
+    'table_code'           => 'Code',
+    'table_student'        => 'Student',
+    'table_class'          => 'Class',
+    'table_amount'         => 'Amount',
+    'table_unit'           => 'Unit',
+];

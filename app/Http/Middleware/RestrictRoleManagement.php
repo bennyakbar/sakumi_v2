@@ -13,13 +13,13 @@ class RestrictRoleManagement
         $user = $request->user();
 
         if (!$user || !$user->hasRole('super_admin')) {
-            abort(403, 'Only Super Admin can manage roles.');
+            abort(403, __('message.super_admin_only'));
         }
 
         // Prevent users from modifying their own role
         $targetUserId = $request->route('user');
         if ($targetUserId && (int) $targetUserId === $user->id) {
-            abort(403, 'You cannot modify your own role.');
+            abort(403, __('message.cannot_modify_own_role'));
         }
 
         return $next($request);

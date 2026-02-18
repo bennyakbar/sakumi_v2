@@ -27,7 +27,7 @@
                                 <select id="student_id" name="student_id"
                                     class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full"
                                     onchange="this.form.submit()">
-                                    <option value="">-- Select Student --</option>
+                                    <option value="">{{ __('app.placeholder.select_student') }}</option>
                                     @foreach($students as $student)
                                         <option value="{{ $student->id }}" {{ $selectedStudentId == $student->id ? 'selected' : '' }}>
                                             {{ $student->name }} ({{ $student->schoolClass->name ?? '-' }})
@@ -45,7 +45,7 @@
 
                             <div class="border-t border-gray-200 pt-4 mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Unpaid Obligations') }}</h3>
-                                <p class="text-sm text-gray-500 mb-4">Select the obligations to include in this invoice:</p>
+                                <p class="text-sm text-gray-500 mb-4">{{ __('app.form.select_obligations') }}</p>
 
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200">
@@ -54,9 +54,9 @@
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     <input type="checkbox" id="select-all" class="rounded border-gray-300">
                                                 </th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee Type</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.label.fee_type') }}</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.label.period') }}</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('app.label.amount') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
@@ -74,7 +74,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr class="bg-gray-50">
-                                                <td colspan="3" class="px-4 py-4 text-sm font-bold text-gray-900 text-right">Selected Total:</td>
+                                                <td colspan="3" class="px-4 py-4 text-sm font-bold text-gray-900 text-right">{{ __('app.form.selected_total') }}</td>
                                                 <td class="px-4 py-4 text-sm font-bold text-indigo-600 text-right" id="selected-total">Rp 0</td>
                                             </tr>
                                         </tfoot>
@@ -97,14 +97,14 @@
                             <div class="flex justify-end space-x-4">
                                 <a href="{{ route('invoices.index') }}"
                                     class="px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
-                                    Cancel
+                                    {{ __('app.button.cancel') }}
                                 </a>
                                 <x-primary-button>{{ __('Create Invoice') }}</x-primary-button>
                             </div>
                         </form>
                     @elseif($selectedStudentId && $obligations->isEmpty())
                         <div class="border-t border-gray-200 pt-4">
-                            <p class="text-gray-500 text-center py-8">No uninvoiced unpaid obligations found for this student.</p>
+                            <p class="text-gray-500 text-center py-8">{{ __('app.form.no_obligations') }}</p>
                         </div>
                     @endif
                 </div>

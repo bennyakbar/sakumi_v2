@@ -64,7 +64,7 @@ class StudentController extends Controller
         }
 
         return redirect()->route('master.students.index')
-            ->with('success', 'Student import finished successfully.')
+            ->with('success', __('message.student_import_success'))
             ->with('error_list', $import->errors);
     }
 
@@ -86,7 +86,7 @@ class StudentController extends Controller
         Student::create($request->validated());
 
         return redirect()->route('master.students.index')
-            ->with('success', 'Student created successfully.');
+            ->with('success', __('message.student_created'));
     }
 
     public function show(Student $student): View
@@ -109,7 +109,7 @@ class StudentController extends Controller
         $student->update($request->validated());
 
         return redirect()->route('master.students.index')
-            ->with('success', 'Student updated successfully.');
+            ->with('success', __('message.student_updated'));
     }
 
     public function destroy(Student $student): RedirectResponse
@@ -117,7 +117,7 @@ class StudentController extends Controller
         $student->delete();
 
         return redirect()->route('master.students.index')
-            ->with('success', 'Student deleted successfully.');
+            ->with('success', __('message.student_deleted'));
     }
 
     private function rowsFromCsv(UploadedFile $file): Collection

@@ -27,7 +27,7 @@ class RolePermissionSeeder extends Seeder
             // Invoices
             'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
             // Settlements
-            'settlements.view', 'settlements.create', 'settlements.cancel',
+            'settlements.view', 'settlements.create', 'settlements.cancel', 'settlements.void',
             // Reports
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
             // Dashboard
@@ -66,7 +66,7 @@ class RolePermissionSeeder extends Seeder
             'transactions.view', 'transactions.create', 'transactions.expense.create', 'transactions.cancel',
             'receipts.view', 'receipts.print', 'receipts.reprint',
             'invoices.view', 'invoices.create', 'invoices.generate', 'invoices.print', 'invoices.cancel',
-            'settlements.view', 'settlements.create', 'settlements.cancel',
+            'settlements.view', 'settlements.create', 'settlements.cancel', 'settlements.void',
             'reports.daily', 'reports.monthly', 'reports.arrears', 'reports.export',
             'users.view',
             'settings.view',

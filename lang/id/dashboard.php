@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'net_cash_today'       => 'Arus Kas Bersih Hari Ini',
+    'net_cash_month'       => 'Arus Kas Bersih Bulan Ini',
+    'total_arrears'        => 'Total Tunggakan',
+    'breakdown'            => 'Rincian Per-Unit',
+    'cash_today'           => 'Arus Kas Hari Ini',
+    'cash_month'           => 'Arus Kas Bulan Ini',
+    'arrears'              => 'Tunggakan',
+    'chart_title'          => 'Grafik Pendapatan & Pengeluaran (6 Bulan)',
+    'income'               => 'Pendapatan',
+    'expense'              => 'Pengeluaran',
+    'recent_transactions'  => 'Transaksi Terbaru',
+    'no_transactions_yet'  => 'Belum ada transaksi.',
+    'current_unit'         => 'Unit Saat Ini',
+    'all_units'            => 'Semua Unit',
+    'view_all'             => 'Lihat Semua',
+    'table_date'           => 'Tanggal',
+    'table_code'           => 'Kode',
+    'table_student'        => 'Siswa',
+    'table_class'          => 'Kelas',
+    'table_amount'         => 'Jumlah',
+    'table_unit'           => 'Unit',
+];

@@ -17,31 +17,31 @@
                         <div class="text-right">
                             @if($transaction->status == 'completed')
                                 <span
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('app.status.completed') }}</span>
                             @elseif($transaction->status == 'cancelled')
                                 <span
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('app.status.cancelled') }}</span>
                             @endif
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Student Info
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('Student Info') }}
                             </h4>
                             <p class="text-gray-900 font-medium">{{ $transaction->student->name ?? '-' }}</p>
-                            <p class="text-gray-600 text-sm">NIS: {{ $transaction->student->nis ?? '-' }}</p>
-                            <p class="text-gray-600 text-sm">Class:
+                            <p class="text-gray-600 text-sm">{{ __('app.label.nis') }}: {{ $transaction->student->nis ?? '-' }}</p>
+                            <p class="text-gray-600 text-sm">{{ __('app.label.class') }}:
                                 {{ $transaction->student->schoolClass->name ?? '-' }}</p>
                         </div>
                         <div>
-                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Payment Info
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('Payment Info') }}
                             </h4>
-                            <p class="text-gray-600 text-sm">Payment Method: {{ ucfirst($transaction->payment_method) }}
+                            <p class="text-gray-600 text-sm">{{ __('app.label.method') }}: {{ ucfirst($transaction->payment_method) }}
                             </p>
-                            <p class="text-gray-600 text-sm">Created By: {{ $transaction->creator->name ?? 'System' }}</p>
+                            <p class="text-gray-600 text-sm">{{ __('app.label.created_by') }}: {{ $transaction->creator->name ?? 'System' }}</p>
                             @if($transaction->notes)
-                                <p class="text-gray-600 text-sm mt-2">Notes: {{ $transaction->notes }}</p>
+                                <p class="text-gray-600 text-sm mt-2">{{ __('app.label.notes') }}: {{ $transaction->notes }}</p>
                             @endif
                         </div>
                     </div>
@@ -52,10 +52,10 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Description / Fee Type</th>
+                                        {{ __('Description / Fee Type') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Amount</th>
+                                        {{ __('app.label.amount') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -73,7 +73,7 @@
                                 @endforeach
                                 <tr class="bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
-                                        Total</td>
+                                        {{ __('app.label.total') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
                                         Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
                                 </tr>
@@ -84,12 +84,12 @@
                     <div class="flex justify-end space-x-4">
                         <a href="{{ route('transactions.index') }}"
                             class="px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
-                            Back
+                            {{ __('app.button.back') }}
                         </a>
                         @can('receipts.print')
                             <a href="{{ route('receipts.print', $transaction) }}" target="_blank"
                                 class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                                Print Receipt
+                                {{ __('Print Receipt') }}
                             </a>
                         @endcan
                     </div>

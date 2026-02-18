@@ -27,19 +27,19 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Code</th>
+                                        {{ __('app.label.code') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
+                                        {{ __('app.label.name') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Type</th>
+                                        {{ __('app.label.type') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Description</th>
+                                        {{ __('app.label.description') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -52,10 +52,10 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             @if($feeType->is_monthly)
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Monthly</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ __('app.status.monthly') }}</span>
                                             @else
                                                 <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">One-time</span>
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ __('app.status.one_time') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -63,7 +63,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('master.fee-types.edit')
                                                 <a href="{{ route('master.fee-types.edit', $feeType) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.edit') }}</a>
                                             @endcan
                                             @can('master.fee-types.delete')
                                                 <form action="{{ route('master.fee-types.destroy', $feeType) }}" method="POST"
@@ -71,7 +71,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="text-red-600 hover:text-red-900">Delete</button>
+                                                        class="text-red-600 hover:text-red-900">{{ __('app.button.delete') }}</button>
                                                 </form>
                                             @endcan
                                         </td>
@@ -79,8 +79,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="5"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No fee
-                                            types found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.fee_types') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

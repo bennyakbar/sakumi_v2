@@ -107,6 +107,27 @@ return new class extends Migration
             Schema::table('classes', function (Blueprint $table) {
                 $table->unique(['unit_id', 'name', 'academic_year'], 'classes_unit_name_ay_unique');
             });
+        } else {
+            // SQLite: replace legacy unique indexes with unit-scoped unique indexes.
+            DB::statement('DROP INDEX IF EXISTS students_nis_unique');
+            DB::statement('DROP INDEX IF EXISTS students_nisn_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS students_unit_nis_unique ON students (unit_id, nis)');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS students_unit_nisn_unique ON students (unit_id, nisn)');
+
+            DB::statement('DROP INDEX IF EXISTS fee_types_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS fee_types_unit_code_unique ON fee_types (unit_id, code)');
+
+            DB::statement('DROP INDEX IF EXISTS student_categories_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS student_categories_unit_code_unique ON student_categories (unit_id, code)');
+
+            DB::statement('DROP INDEX IF EXISTS accounts_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS accounts_unit_code_unique ON accounts (unit_id, code)');
+
+            DB::statement('DROP INDEX IF EXISTS categories_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS categories_unit_code_unique ON categories (unit_id, code)');
+
+            DB::statement('DROP INDEX IF EXISTS classes_name_academic_year_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS classes_unit_name_ay_unique ON classes (unit_id, name, academic_year)');
         }
     }
 
@@ -170,6 +191,26 @@ return new class extends Migration
                     $table->unique(['name', 'academic_year']);
                 });
             }
+        } else {
+            DB::statement('DROP INDEX IF EXISTS students_unit_nis_unique');
+            DB::statement('DROP INDEX IF EXISTS students_unit_nisn_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS students_nis_unique ON students (nis)');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS students_nisn_unique ON students (nisn)');
+
+            DB::statement('DROP INDEX IF EXISTS fee_types_unit_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS fee_types_code_unique ON fee_types (code)');
+
+            DB::statement('DROP INDEX IF EXISTS student_categories_unit_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS student_categories_code_unique ON student_categories (code)');
+
+            DB::statement('DROP INDEX IF EXISTS accounts_unit_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS accounts_code_unique ON accounts (code)');
+
+            DB::statement('DROP INDEX IF EXISTS categories_unit_code_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS categories_code_unique ON categories (code)');
+
+            DB::statement('DROP INDEX IF EXISTS classes_unit_name_ay_unique');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS classes_name_academic_year_unique ON classes (name, academic_year)');
         }
 
         // 2. Drop unit_id from all tables (reverse order for FK safety)

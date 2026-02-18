@@ -14,6 +14,13 @@ class ReportService
         $transactions = Transaction::with('items.feeType', 'student', 'creator')
             ->where('transaction_date', $date)
             ->where('status', 'completed')
+            ->where(function ($q) {
+                $q->where('type', 'expense')
+                    ->orWhere(function ($iq) {
+                        $iq->where('type', 'income')
+                            ->whereNull('student_id');
+                    });
+            })
             ->orderBy('created_at')
             ->get();
 
@@ -42,10 +49,24 @@ class ReportService
 
         $transactions = Transaction::where('status', 'completed')
             ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where(function ($q) {
+                $q->where('type', 'expense')
+                    ->orWhere(function ($iq) {
+                        $iq->where('type', 'income')
+                            ->whereNull('student_id');
+                    });
+            })
             ->get();
 
         $dailyStats = Transaction::where('status', 'completed')
             ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where(function ($q) {
+                $q->where('type', 'expense')
+                    ->orWhere(function ($iq) {
+                        $iq->where('type', 'income')
+                            ->whereNull('student_id');
+                    });
+            })
             ->select(
                 'transaction_date',
                 'type',
@@ -79,6 +100,7 @@ class ReportService
 
             $incomeQuery = Transaction::where('status', 'completed')
                 ->where('type', 'income')
+                ->whereNull('student_id')
                 ->whereMonth('transaction_date', $date->month)
                 ->whereYear('transaction_date', $date->year);
 

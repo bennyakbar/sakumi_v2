@@ -41,7 +41,7 @@ class FeeTypeController extends Controller
         FeeType::create($validated);
 
         return redirect()->route('master.fee-types.index')
-            ->with('success', 'Fee Type created successfully.');
+            ->with('success', __('message.fee_type_created'));
     }
 
     /**
@@ -72,7 +72,7 @@ class FeeTypeController extends Controller
         $feeType->update($validated);
 
         return redirect()->route('master.fee-types.index')
-            ->with('success', 'Fee Type updated successfully.');
+            ->with('success', __('message.fee_type_updated'));
     }
 
     /**
@@ -81,12 +81,12 @@ class FeeTypeController extends Controller
     public function destroy(FeeType $feeType): RedirectResponse
     {
         if ($feeType->feeMatrix()->exists()) {
-            return back()->with('error', 'Cannot delete fee type because it is used in fee matrices.');
+            return back()->with('error', __('message.fee_type_in_use'));
         }
 
         $feeType->delete();
 
         return redirect()->route('master.fee-types.index')
-            ->with('success', 'Fee Type deleted successfully.');
+            ->with('success', __('message.fee_type_deleted'));
     }
 }

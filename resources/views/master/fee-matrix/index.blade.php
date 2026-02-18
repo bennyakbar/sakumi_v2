@@ -27,19 +27,19 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Class</th>
+                                        {{ __('app.label.class') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Category</th>
+                                        {{ __('app.label.category') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Fee Type</th>
+                                        {{ __('app.label.fee_type') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Amount</th>
+                                        {{ __('app.label.amount') }}</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                                        {{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -56,7 +56,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('master.fee-matrix.edit')
                                                 <a href="{{ route('master.fee-matrix.edit', $matrix) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('app.button.edit') }}</a>
                                             @endcan
                                             @can('master.fee-matrix.delete')
                                                 <form action="{{ route('master.fee-matrix.destroy', $matrix) }}" method="POST"
@@ -64,7 +64,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="text-red-600 hover:text-red-900">Delete</button>
+                                                        class="text-red-600 hover:text-red-900">{{ __('app.button.delete') }}</button>
                                                 </form>
                                             @endcan
                                         </td>
@@ -72,8 +72,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="5"
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No fee
-                                            matrices found.</td>
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ __('app.empty.fee_matrices') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

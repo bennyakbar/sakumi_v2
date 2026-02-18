@@ -4,16 +4,7 @@
 
 ### Overview
 
-SAKUMI is a school finance web application to manage student billing, payments, receipts, settlements, and reporting in one system.
-
-Built for both school operations and technical teams.
-
-### At a Glance
-
-- Purpose: structured, auditable, role-based school finance operations.
-- Primary users: TU/Admin, Operator, Treasurer (`bendahara`), Principal, Auditor.
-- Core modules: master data, obligations/invoices, transactions, receipts, settlements, reports.
-- Multi-unit scope support: `MI`, `RA`, `DTA`.
+SAKUMI is a y `MI`, `RA`, `DTA`.
 
 ### What This App Covers
 
@@ -53,6 +44,7 @@ Seeded by `FixedLoginSeeder`:
 - Kepala Sekolah: `kepala.sekolah@sakumi.local` / `KepalaSekolah#2026`
 
 Note: `admin_tu_mi`, `admin_tu_ra`, and `admin_tu_dta` are unit-scoped operational admin roles (not `super_admin`).
+Legacy login `admin.tu@sakumi.local` is deprecated and intentionally retired (disabled/archived) by seeder.
 
 Recovery commands if login/roles are inconsistent:
 
@@ -172,6 +164,14 @@ Development:
 ./stop.sh
 php artisan optimize:clear
 php artisan test
+```
+
+Production preflight:
+
+```bash
+bash scripts/preflight-prod.sh
+# Optional, include full test suite:
+bash scripts/preflight-prod.sh --with-tests
 ```
 
 Database/ops:
@@ -313,6 +313,7 @@ Di-seed oleh `FixedLoginSeeder`:
 - Kepala Sekolah: `kepala.sekolah@sakumi.local` / `KepalaSekolah#2026`
 
 Catatan: `admin_tu_mi`, `admin_tu_ra`, dan `admin_tu_dta` adalah role admin operasional per unit (bukan `super_admin`).
+Login legacy `admin.tu@sakumi.local` sudah deprecated dan sengaja dipensiunkan (disabled/archived) oleh seeder.
 
 Command recovery jika data login/role tidak konsisten:
 

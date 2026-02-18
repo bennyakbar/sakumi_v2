@@ -19,13 +19,13 @@ class UnitSwitchController extends Controller
             ->first();
 
         if (! $unit) {
-            return back()->withErrors(['unit_id' => 'Unit tidak aktif.']);
+            return back()->withErrors(['unit_id' => __('message.unit_inactive')]);
         }
 
         $user = $request->user();
 
-        if (! $user->hasRole('super_admin') && $user->unit_id !== $unit->id) {
-            abort(403, 'Anda tidak memiliki izin untuk berpindah unit.');
+        if (! $user->hasRole(['super_admin', 'bendahara']) && $user->unit_id !== $unit->id) {
+            abort(403, __('message.no_switch_permission'));
         }
 
         session(['current_unit_id' => $unit->id]);

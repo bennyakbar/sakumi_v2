@@ -46,17 +46,37 @@ class SettlementController extends Controller
     {
         $students = Student::with('schoolClass')->where('status', 'active')->orderBy('name')->get();
         $selectedStudentId = $request->input('student_id');
+        $selectedInvoiceId = $request->input('invoice_id');
         $outstandingInvoices = collect();
 
         if ($selectedStudentId) {
             $outstandingInvoices = Invoice::where('student_id', $selectedStudentId)
-                ->whereIn('status', ['unpaid', 'partially_paid'])
+                ->withSum(['allocations as settled_amount' => function ($q) {
+                    $q->whereHas('settlement', fn ($sq) => $sq->where('status', 'completed'));
+                }], 'amount')
                 ->with('items.feeType')
                 ->orderBy('due_date')
-                ->get();
+                ->get()
+                ->map(function (Invoice $invoice) {
+                    $settled = (float) ($invoice->settled_amount ?? 0);
+                    $invoice->outstanding_amount = max(0, (float) $invoice->total_amount - $settled);
+                    return $invoice;
+                })
+                ->filter(fn (Invoice $invoice) => $invoice->outstanding_amount > 0)
+                ->values();
+
+            if (!$selectedInvoiceId && $outstandingInvoices->isNotEmpty()) {
+                $selectedInvoiceId = (int) $outstandingInvoices->first()->id;
+            }
+
+            if ($selectedInvoiceId) {
+                $outstandingInvoices = $outstandingInvoices
+                    ->where('id', (int) $selectedInvoiceId)
+                    ->values();
+            }
         }
 
-        return view('settlements.create', compact('students', 'outstandingInvoices', 'selectedStudentId'));
+        return view('settlements.create', compact('students', 'outstandingInvoices', 'selectedStudentId', 'selectedInvoiceId'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -65,28 +85,39 @@ class SettlementController extends Controller
 
         $validated = $request->validate([
             'student_id' => ['required', Rule::exists('students', 'id')->where('unit_id', $unitId)],
+            'invoice_id' => ['required', Rule::exists('invoices', 'id')->where('unit_id', $unitId)],
             'payment_date' => 'required|date',
             'payment_method' => 'required|in:cash,transfer,qris',
-            'total_amount' => 'required|numeric|gt:0',
+            'amount' => 'required|numeric|min:1',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:1000',
-            'allocations' => 'required|array|min:1',
-            'allocations.*.invoice_id' => ['required', Rule::exists('invoices', 'id')->where('unit_id', $unitId)],
-            'allocations.*.amount' => 'required|numeric|min:0',
         ]);
 
-        // Build allocations map: invoice_id => amount
-        $allocations = [];
-        foreach ($validated['allocations'] as $alloc) {
-            $amount = (float) $alloc['amount'];
-            if ($amount > 0) {
-                $allocations[(int) $alloc['invoice_id']] = $amount;
-            }
+        $invoice = Invoice::query()
+            ->where('id', (int) $validated['invoice_id'])
+            ->where('student_id', (int) $validated['student_id'])
+            ->where('unit_id', $unitId)
+            ->firstOrFail();
+
+        $settledAmount = (float) $invoice->allocations()
+            ->whereHas('settlement', fn ($q) => $q->where('status', 'completed'))
+            ->sum('amount');
+        $outstanding = max(0, (float) $invoice->total_amount - $settledAmount);
+        $amount = (float) $validated['amount'];
+
+        if ($amount > $outstanding) {
+            return back()->withInput()->withErrors([
+                'amount' => __('message.payment_exceeds_outstanding'),
+            ]);
         }
 
-        if (empty($allocations)) {
-            return back()->withInput()->with('error', 'At least one invoice must have an allocation amount greater than zero.');
+        if ($outstanding <= 0) {
+            return back()->withInput()->withErrors([
+                'invoice_id' => __('message.invoice_no_balance'),
+            ]);
         }
+
+        $allocations = [(int) $validated['invoice_id'] => $amount];
 
         try {
             $settlement = $this->settlementService->createSettlement(
@@ -94,7 +125,7 @@ class SettlementController extends Controller
                     'student_id' => (int) $validated['student_id'],
                     'payment_date' => $validated['payment_date'],
                     'payment_method' => $validated['payment_method'],
-                    'total_amount' => (float) $validated['total_amount'],
+                    'total_amount' => $amount,
                     'reference_number' => $validated['reference_number'] ?? null,
                     'notes' => $validated['notes'] ?? null,
                 ],
@@ -103,10 +134,10 @@ class SettlementController extends Controller
             );
 
             return redirect()->route('settlements.show', $settlement)
-                ->with('success', 'Settlement created: ' . $settlement->settlement_number);
+                ->with('success', __('message.settlement_created', ['number' => $settlement->settlement_number]));
         } catch (\Throwable $e) {
             Log::error('Failed to create settlement', ['message' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Failed to create settlement: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('message.settlement_create_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -117,9 +148,30 @@ class SettlementController extends Controller
             'allocations.invoice',
             'creator',
             'canceller',
+            'voider',
         ]);
 
         return view('settlements.show', compact('settlement'));
+    }
+
+    public function void(Request $request, Settlement $settlement): RedirectResponse
+    {
+        $request->validate([
+            'void_reason' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $this->settlementService->void(
+                settlement: $settlement,
+                userId: (int) auth()->id(),
+                reason: $request->input('void_reason'),
+            );
+
+            return redirect()->route('settlements.show', $settlement)
+                ->with('success', __('message.settlement_voided'));
+        } catch (\Throwable $e) {
+            return back()->with('error', __('message.settlement_void_failed', ['error' => $e->getMessage()]));
+        }
     }
 
     public function destroy(Request $request, Settlement $settlement): RedirectResponse
@@ -128,11 +180,11 @@ class SettlementController extends Controller
             $this->settlementService->cancel(
                 settlement: $settlement,
                 userId: (int) auth()->id(),
-                reason: (string) ($request->input('cancellation_reason') ?: 'Cancelled by administrator'),
+                reason: (string) ($request->input('cancellation_reason') ?: __('message.cancelled_by_admin')),
             );
 
             return redirect()->route('settlements.index')
-                ->with('success', 'Settlement cancelled successfully.');
+                ->with('success', __('message.settlement_cancelled'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }

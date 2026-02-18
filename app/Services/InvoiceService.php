@@ -52,7 +52,7 @@ class InvoiceService
             $year = (int) str_replace('AY', '', $periodIdentifier);
             $month = null;
         } else {
-            $result['errors'][] = "Unsupported period type: {$periodType}";
+            $result['errors'][] = __('message.unsupported_period_type', ['type' => $periodType]);
             return $result;
         }
 
@@ -161,11 +161,11 @@ class InvoiceService
                 ->get();
 
             if ($obligations->isEmpty()) {
-                throw new \RuntimeException('No valid unpaid obligations found.');
+                throw new \RuntimeException(__('message.no_valid_obligations'));
             }
 
             if ($obligations->count() !== count($obligationIds)) {
-                throw new \RuntimeException('Some obligations are already paid or already invoiced.');
+                throw new \RuntimeException(__('message.obligations_already_invoiced'));
             }
 
             $totalAmount = $obligations->sum('amount');
@@ -209,11 +209,11 @@ class InvoiceService
     public function cancel(Invoice $invoice): Invoice
     {
         if ($invoice->status === 'paid') {
-            throw new \RuntimeException('Cannot cancel a fully paid invoice.');
+            throw new \RuntimeException(__('message.cannot_cancel_paid_invoice'));
         }
 
         if ((float) $invoice->paid_amount > 0) {
-            throw new \RuntimeException('Cannot cancel an invoice with existing payments. Cancel the settlements first.');
+            throw new \RuntimeException(__('message.cannot_cancel_invoice_payments'));
         }
 
         $invoice->update(['status' => 'cancelled']);

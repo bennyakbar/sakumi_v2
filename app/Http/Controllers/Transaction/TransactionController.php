@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
-use App\Models\Student;
 use App\Models\Transaction;
 use App\Models\FeeType;
-use App\Models\Invoice;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -73,7 +71,6 @@ class TransactionController extends Controller
      */
     public function create(): View
     {
-        $students = Student::with('schoolClass')->where('status', 'active')->get();
         $incomeFeeTypes = FeeType::query()
             ->where('is_active', true)
             ->where('code', 'not like', 'EXP-%')
@@ -93,18 +90,12 @@ class TransactionController extends Controller
             ->map(fn (FeeType $feeType): array => [
                 'id' => $feeType->id,
                 'name' => $feeType->name,
-                'category' => $feeType->expenseFeeSubcategory?->category?->name ?? 'Uncategorized',
-                'subcategory' => $feeType->expenseFeeSubcategory?->name ?? 'General',
+                'category' => $feeType->expenseFeeSubcategory?->category?->name ?? __('message.uncategorized'),
+                'subcategory' => $feeType->expenseFeeSubcategory?->name ?? __('message.general'),
             ])->values();
         $canCreateExpense = auth()->user()?->can('transactions.expense.create') ?? false;
 
-        // Phase 3: Collect student IDs with outstanding invoices for client-side warning
-        $studentsWithOutstandingInvoices = Invoice::whereIn('status', ['unpaid', 'partially_paid'])
-            ->pluck('student_id')
-            ->unique()
-            ->values();
-
-        return view('transactions.create', compact('students', 'incomeFeeTypes', 'expenseFeeTypes', 'canCreateExpense', 'studentsWithOutstandingInvoices'));
+        return view('transactions.create', compact('incomeFeeTypes', 'expenseFeeTypes', 'canCreateExpense'));
     }
 
     /**
@@ -116,18 +107,18 @@ class TransactionController extends Controller
         $transactionType = (string) $request->input('type', 'income');
 
         if (! in_array($transactionType, ['income', 'expense'], true)) {
-            return back()->withInput()->withErrors(['type' => 'Invalid transaction type.']);
+            return back()->withInput()->withErrors(['type' => __('message.invalid_transaction_type')]);
         }
 
         if ($transactionType === 'expense' && ! (auth()->user()?->can('transactions.expense.create'))) {
-            abort(403, 'You are not authorized to create expense transactions.');
+            abort(403, __('message.expense_not_authorized'));
         }
 
         $validated = $request->validate([
             'type' => 'nullable|in:income,expense',
             'student_id' => [
-                Rule::requiredIf($transactionType === 'income'),
                 'nullable',
+                Rule::prohibitedIf(in_array($transactionType, ['income', 'expense'], true)),
                 Rule::exists('students', 'id')->where('unit_id', $unitId),
             ],
             'transaction_date' => 'required|date',
@@ -138,18 +129,6 @@ class TransactionController extends Controller
             'items.*.amount' => 'required|numeric|gt:0',
             'items.*.description' => 'nullable|string',
         ]);
-
-        // Phase 3: Hard block — reject income if student has outstanding invoices
-        if ($transactionType === 'income' && !empty($validated['student_id'])) {
-            $hasOutstandingInvoices = Invoice::where('student_id', $validated['student_id'])
-                ->whereIn('status', ['unpaid', 'partially_paid'])
-                ->exists();
-            if ($hasOutstandingInvoices) {
-                return back()->withErrors([
-                    'student_id' => 'Siswa ini memiliki invoice yang belum lunas. Gunakan modul Settlement untuk pembayaran invoice.',
-                ])->withInput();
-            }
-        }
 
         try {
             $items = collect($validated['items'])
@@ -172,7 +151,6 @@ class TransactionController extends Controller
                 )
                 : $this->transactionService->createIncome(
                     data: [
-                        'student_id' => (int) $validated['student_id'],
                         'transaction_date' => $validated['transaction_date'],
                         'payment_method' => $validated['payment_method'],
                         'description' => $validated['description'] ?? null,
@@ -182,14 +160,14 @@ class TransactionController extends Controller
                 );
 
             return redirect()->route('transactions.show', $transaction)
-                ->with('success', 'Transaction created successfully. Number: ' . $transaction->transaction_number);
+                ->with('success', __('message.transaction_created', ['number' => $transaction->transaction_number]));
         } catch (\Throwable $e) {
             Log::error('Failed to create transaction', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()->withInput()->with('error', 'Failed to create transaction: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('message.transaction_create_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -210,7 +188,7 @@ class TransactionController extends Controller
     {
         // Transactions usually shouldn't be edited directly to maintain audit trail.
         // If needed, can implement void/cancel logic instead.
-        return back()->with('error', 'Transactions cannot be edited.');
+        return back()->with('error', __('message.transaction_no_edit'));
     }
 
     /**
@@ -230,11 +208,11 @@ class TransactionController extends Controller
             $this->transactionService->cancel(
                 transaction: $transaction->load('items'),
                 userId: (int) auth()->id(),
-                reason: (string) ($request->input('cancellation_reason') ?: 'Cancelled by administrator'),
+                reason: (string) ($request->input('cancellation_reason') ?: __('message.cancelled_by_admin')),
             );
 
             return redirect()->route('transactions.index')
-                ->with('success', 'Transaction cancelled successfully.');
+                ->with('success', __('message.transaction_cancelled'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }

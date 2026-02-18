@@ -233,14 +233,12 @@ class UnitIsolationTest extends TestCase
         $this->actAsUnit($this->raUser, $this->ra)
             ->post(route('settlements.store'), [
                 'student_id' => $raStudent->id,
+                'invoice_id' => $miInvoice->id,
                 'payment_date' => today()->toDateString(),
                 'payment_method' => 'cash',
-                'total_amount' => 100000,
-                'allocations' => [
-                    ['invoice_id' => $miInvoice->id, 'amount' => 100000],
-                ],
+                'amount' => 100000,
             ])
-            ->assertSessionHasErrors('allocations.0.invoice_id');
+            ->assertSessionHasErrors('invoice_id');
     }
 
     public function test_transaction_rejects_cross_unit_student(): void

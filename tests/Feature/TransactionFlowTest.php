@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\FeeType;
-use App\Models\Invoice;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentCategory;
@@ -39,28 +38,6 @@ class TransactionFlowTest extends TestCase
             $mock->shouldReceive('generate')->once()->andReturn('receipts/mock.pdf');
         });
 
-        $class = SchoolClass::query()->create([
-            'name' => '1A',
-            'level' => 1,
-            'academic_year' => '2025/2026',
-            'is_active' => true,
-        ]);
-
-        $category = StudentCategory::query()->create([
-            'code' => 'REG',
-            'name' => 'Regular',
-            'discount_percentage' => 0,
-        ]);
-
-        $student = Student::query()->create([
-            'nis' => '10001',
-            'nisn' => '20001',
-            'name' => 'Budi',
-            'class_id' => $class->id,
-            'category_id' => $category->id,
-            'status' => 'active',
-        ]);
-
         $feeA = FeeType::query()->create([
             'code' => 'SPP',
             'name' => 'SPP Februari',
@@ -76,7 +53,6 @@ class TransactionFlowTest extends TestCase
         ]);
 
         $response = $this->post(route('transactions.store'), [
-            'student_id' => $student->id,
             'transaction_date' => '2026-02-14',
             'payment_method' => 'cash',
             'description' => 'Pembayaran gabungan',
@@ -94,6 +70,7 @@ class TransactionFlowTest extends TestCase
         $this->assertSame('completed', $transaction->status);
         $this->assertSame('NF-2026-000001', $transaction->transaction_number);
         $this->assertSame('150000.00', $transaction->total_amount);
+        $this->assertNull($transaction->student_id);
 
         $this->assertDatabaseCount('transaction_items', 2);
         $this->assertDatabaseHas('transaction_items', [
@@ -205,7 +182,7 @@ class TransactionFlowTest extends TestCase
             ->assertDontSee('Kelas', false);
     }
 
-    public function test_income_transaction_blocked_when_student_has_outstanding_invoice(): void
+    public function test_income_transaction_rejects_student_context_to_prevent_invoice_overlap(): void
     {
         $user = User::factory()->create();
         $user->assignRole('bendahara');
@@ -232,17 +209,6 @@ class TransactionFlowTest extends TestCase
             'class_id' => $class->id,
             'category_id' => $category->id,
             'status' => 'active',
-        ]);
-
-        // Create an outstanding invoice for this student
-        Invoice::factory()->create([
-            'unit_id' => $user->unit_id,
-            'student_id' => $student->id,
-            'total_amount' => 500000,
-            'paid_amount' => 0,
-            'status' => 'unpaid',
-            'due_date' => today()->subDay()->toDateString(),
-            'created_by' => $user->id,
         ]);
 
         $feeType = FeeType::query()->create([

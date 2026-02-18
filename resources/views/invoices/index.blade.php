@@ -33,26 +33,26 @@
                     <form method="GET" action="{{ route('invoices.index') }}" class="mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <x-text-input name="search" class="block w-full" placeholder="Search invoice or student..." :value="request('search')" />
+                                <x-text-input name="search" class="block w-full" :placeholder="__('app.placeholder.search_invoice')" :value="request('search')" />
                             </div>
                             <div>
                                 <select name="status" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full">
-                                    <option value="">All Status</option>
-                                    <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
-                                    <option value="partially_paid" {{ request('status') === 'partially_paid' ? 'selected' : '' }}>Partially Paid</option>
-                                    <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Paid</option>
-                                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    <option value="">{{ __('app.filter.all_status') }}</option>
+                                    <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>{{ __('app.status.unpaid') }}</option>
+                                    <option value="partially_paid" {{ request('status') === 'partially_paid' ? 'selected' : '' }}>{{ __('app.status.partial') }}</option>
+                                    <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>{{ __('app.status.paid') }}</option>
+                                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('app.status.cancelled') }}</option>
                                 </select>
                             </div>
                             <div>
                                 <select name="period_type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full">
-                                    <option value="">All Periods</option>
-                                    <option value="monthly" {{ request('period_type') === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                    <option value="annual" {{ request('period_type') === 'annual' ? 'selected' : '' }}>Annual</option>
+                                    <option value="">{{ __('app.filter.all_periods') }}</option>
+                                    <option value="monthly" {{ request('period_type') === 'monthly' ? 'selected' : '' }}>{{ __('app.status.monthly') }}</option>
+                                    <option value="annual" {{ request('period_type') === 'annual' ? 'selected' : '' }}>{{ __('app.status.annual') }}</option>
                                 </select>
                             </div>
                             <div>
-                                <x-primary-button class="w-full justify-center">{{ __('Filter') }}</x-primary-button>
+                                <x-primary-button class="w-full justify-center">{{ __('app.button.filter') }}</x-primary-button>
                             </div>
                         </div>
                     </form>
@@ -61,14 +61,14 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Invoice #') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.student') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.period') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.due_date') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.total') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.outstanding') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.status') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.label.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -90,30 +90,30 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             @if($invoice->status === 'unpaid')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Unpaid</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ __('app.status.unpaid') }}</span>
                                             @elseif($invoice->status === 'partially_paid')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Partial</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ __('app.status.partial') }}</span>
                                             @elseif($invoice->status === 'paid')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('app.status.paid') }}</span>
                                             @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ __('app.status.cancelled') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Detail</a>
+                                            <a href="{{ route('invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">{{ __('app.button.detail') }}</a>
                                             @can('invoices.print')
-                                                <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="text-gray-600 hover:text-gray-900 mr-2">Print</a>
+                                                <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="text-gray-600 hover:text-gray-900 mr-2">{{ __('app.button.print') }}</a>
                                             @endcan
                                             @can('settlements.create')
                                                 @if(in_array($invoice->status, ['unpaid', 'partially_paid']))
-                                                    <a href="{{ route('settlements.create', ['student_id' => $invoice->student_id]) }}" class="text-green-600 hover:text-green-900">Pay</a>
+                                                    <a href="{{ route('settlements.create', ['student_id' => $invoice->student_id, 'invoice_id' => $invoice->id]) }}" class="text-green-600 hover:text-green-900">{{ __('app.button.pay') }}</a>
                                                 @endif
                                             @endcan
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">No invoices found.</td>
+                                        <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">{{ __('app.empty.invoices') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

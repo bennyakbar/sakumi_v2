@@ -22,7 +22,6 @@ class FixedLoginSeeder extends Seeder
             'DTA' => Unit::query()->where('code', 'DTA')->value('id') ?? $defaultUnitId,
         ];
 
-        $adminTuRole = Role::firstOrCreate(['name' => 'admin_tu']);
         $staffRole = Role::firstOrCreate(['name' => 'staff']);
         $adminTuMiRole = Role::firstOrCreate(['name' => 'admin_tu_mi']);
         $adminTuRaRole = Role::firstOrCreate(['name' => 'admin_tu_ra']);
@@ -78,16 +77,15 @@ class FixedLoginSeeder extends Seeder
             ]
         )->syncRoles([$adminTuDtaRole->name]);
 
-        // Keep legacy account for backward compatibility, but mark inactive.
-        User::updateOrCreate(
-            ['email' => 'admin.tu@sakumi.local'],
-            [
-                'name' => 'Admin TU (Legacy)',
-                'password' => Hash::make('AdminTU#2026'),
+        // Retire deprecated legacy login without breaking historical foreign-key references.
+        User::query()
+            ->where('email', 'admin.tu@sakumi.local')
+            ->update([
+                'email' => 'archived.admin.tu@sakumi.local',
+                'name' => 'Archived Admin TU (Legacy)',
+                'password' => Hash::make('disabled-legacy-account'),
                 'is_active' => false,
-                'unit_id' => $unitIds['MI'],
-            ]
-        )->syncRoles([$adminTuRole->name]);
+            ]);
 
         $staffUser = User::updateOrCreate(
             ['email' => 'staff@sakumi.local'],
@@ -106,7 +104,8 @@ class FixedLoginSeeder extends Seeder
                 'name' => 'Bendahara',
                 'password' => Hash::make('Bendahara#2026'),
                 'is_active' => true,
-                'unit_id' => $defaultUnitId,
+                // Primary unit is MI; cross-unit access (MI/RA/DTA) is granted by role policy.
+                'unit_id' => $unitIds['MI'],
             ]
         );
         $bendaharaUser->syncRoles(['bendahara']);

@@ -71,7 +71,7 @@ class ConsolidatedReportTest extends TestCase
         // Create transactions in both units with correct students
         $this->miTransaction = Transaction::factory()->create([
             'unit_id' => $this->mi->id,
-            'student_id' => $this->miStudent->id,
+            'student_id' => null,
             'status' => 'completed',
             'type' => 'income',
             'transaction_date' => today(),
@@ -81,7 +81,7 @@ class ConsolidatedReportTest extends TestCase
 
         $this->raTransaction = Transaction::factory()->create([
             'unit_id' => $this->ra->id,
-            'student_id' => $this->raStudent->id,
+            'student_id' => null,
             'status' => 'completed',
             'type' => 'income',
             'transaction_date' => today(),

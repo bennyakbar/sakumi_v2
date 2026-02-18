@@ -18,11 +18,16 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ReportController extends Controller
 {
     private const AGING_BUCKETS = [
-        'current' => ['label' => '0-30 hari', 'min' => 0, 'max' => 30],
-        'd31_60' => ['label' => '31-60 hari', 'min' => 31, 'max' => 60],
-        'd61_90' => ['label' => '61-90 hari', 'min' => 61, 'max' => 90],
-        'd90_plus' => ['label' => '>90 hari', 'min' => 91, 'max' => null],
+        'current' => ['label_key' => 'message.aging_0_30', 'min' => 0, 'max' => 30],
+        'd31_60' => ['label_key' => 'message.aging_31_60', 'min' => 31, 'max' => 60],
+        'd61_90' => ['label_key' => 'message.aging_61_90', 'min' => 61, 'max' => 90],
+        'd90_plus' => ['label_key' => 'message.aging_90_plus', 'min' => 91, 'max' => null],
     ];
+
+    private static function agingLabel(string $bucketKey): string
+    {
+        return __((self::AGING_BUCKETS[$bucketKey] ?? self::AGING_BUCKETS['d90_plus'])['label_key']);
+    }
 
     private function resolveScope(Request $request): array
     {
@@ -60,7 +65,7 @@ class ReportController extends Controller
 
         $settlementEntries = $settlements->map(function (Settlement $settlement): array {
             return [
-                'source' => 'Settlement',
+                'source' => __('message.source_settlement'),
                 'unit_code' => $settlement->unit->code ?? null,
                 'time' => $settlement->created_at?->format('H:i') ?? '-',
                 'code' => $settlement->settlement_number,
@@ -99,12 +104,19 @@ class ReportController extends Controller
         $transactions = $transactionQuery
             ->whereDate('transaction_date', $date)
             ->where('status', 'completed')
+            ->where(function ($q) {
+                $q->where('type', 'expense')
+                    ->orWhere(function ($iq) {
+                        $iq->where('type', 'income')
+                            ->whereNull('student_id');
+                    });
+            })
             ->latest()
             ->get();
 
         $transactionEntries = $transactions->map(function (Transaction $transaction): array {
             return [
-                'source' => 'Transaksi Langsung',
+                'source' => __('message.source_direct_transaction'),
                 'unit_code' => $transaction->unit->code ?? null,
                 'time' => $transaction->created_at?->format('H:i') ?? '-',
                 'code' => $transaction->transaction_number,
@@ -158,6 +170,13 @@ class ReportController extends Controller
             ->whereMonth('transaction_date', $month)
             ->whereYear('transaction_date', $year)
             ->where('status', 'completed')
+            ->where(function ($q) {
+                $q->where('type', 'expense')
+                    ->orWhere(function ($iq) {
+                        $iq->where('type', 'income')
+                            ->whereNull('student_id');
+                    });
+            })
             ->orderBy('transaction_date')
             ->get();
 
@@ -235,7 +254,7 @@ class ReportController extends Controller
                 $bucketKey = $this->resolveAgingBucket($agingDays);
 
                 $invoice->aging_days = $agingDays;
-                $invoice->aging_bucket = self::AGING_BUCKETS[$bucketKey]['label'];
+                $invoice->aging_bucket = self::agingLabel($bucketKey);
                 $invoice->aging_bucket_key = $bucketKey;
 
                 return $invoice;
@@ -325,7 +344,7 @@ class ReportController extends Controller
                 $this->buildClassLabel($invoice, $consolidated),
                 $dueDate->format('Y-m-d'),
                 $agingDays,
-                self::AGING_BUCKETS[$bucketKey]['label'],
+                self::agingLabel($bucketKey),
                 (float) $invoice->total_amount,
                 (float) ($invoice->settled_amount ?? 0),
                 (float) ($invoice->outstanding_amount ?? 0),
@@ -399,7 +418,7 @@ class ReportController extends Controller
     {
         $agingSummary = collect(self::AGING_BUCKETS)->mapWithKeys(fn ($bucket, $key) => [
             $key => [
-                'label' => $bucket['label'],
+                'label' => __($bucket['label_key']),
                 'count' => 0,
                 'amount' => 0.0,
             ],

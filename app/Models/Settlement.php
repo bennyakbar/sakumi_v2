@@ -29,6 +29,9 @@ class Settlement extends Model
         'cancelled_at',
         'cancelled_by',
         'cancellation_reason',
+        'voided_at',
+        'voided_by',
+        'void_reason',
     ];
 
     protected function casts(): array
@@ -38,13 +41,14 @@ class Settlement extends Model
             'total_amount' => 'decimal:2',
             'allocated_amount' => 'decimal:2',
             'cancelled_at' => 'datetime',
+            'voided_at' => 'datetime',
         ];
     }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['status', 'cancellation_reason'])
+            ->logOnly(['status', 'cancellation_reason', 'void_reason'])
             ->logOnlyDirty();
     }
 
@@ -63,6 +67,11 @@ class Settlement extends Model
         return $this->belongsTo(User::class, 'cancelled_by');
     }
 
+    public function voider(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
+    }
+
     public function allocations(): HasMany
     {
         return $this->hasMany(SettlementAllocation::class);
@@ -76,5 +85,10 @@ class Settlement extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    public function isVoided(): bool
+    {
+        return $this->status === 'void';
     }
 }

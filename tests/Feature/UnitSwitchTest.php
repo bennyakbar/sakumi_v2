@@ -18,6 +18,7 @@ class UnitSwitchTest extends TestCase
     private Unit $mi;
     private Unit $ra;
     private User $superAdmin;
+    private User $bendahara;
     private User $operator;
 
     protected function setUp(): void
@@ -32,6 +33,9 @@ class UnitSwitchTest extends TestCase
 
         $this->superAdmin = User::factory()->create(['unit_id' => $this->mi->id]);
         $this->superAdmin->assignRole('super_admin');
+
+        $this->bendahara = User::factory()->create(['unit_id' => $this->mi->id]);
+        $this->bendahara->assignRole('bendahara');
 
         $this->operator = User::factory()->create(['unit_id' => $this->mi->id]);
         $this->operator->assignRole('operator_tu');
@@ -65,6 +69,16 @@ class UnitSwitchTest extends TestCase
             ->assertRedirect();
 
         $this->assertEquals($this->mi->id, session('current_unit_id'));
+    }
+
+    public function test_bendahara_can_switch_unit(): void
+    {
+        $this->actingAs($this->bendahara)
+            ->withSession(['current_unit_id' => $this->mi->id])
+            ->post(route('unit.switch'), ['unit_id' => $this->ra->id])
+            ->assertRedirect();
+
+        $this->assertEquals($this->ra->id, session('current_unit_id'));
     }
 
     public function test_cannot_switch_to_inactive_unit(): void
@@ -120,6 +134,27 @@ class UnitSwitchTest extends TestCase
             ->assertSee($this->ra->code);
     }
 
+    public function test_nav_shows_unit_switcher_for_bendahara(): void
+    {
+        $this->actingAs($this->bendahara)
+            ->withSession(['current_unit_id' => $this->mi->id])
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee($this->mi->code)
+            ->assertSee($this->ra->code);
+    }
+
+    public function test_nav_hides_master_core_links_for_bendahara(): void
+    {
+        $this->actingAs($this->bendahara)
+            ->withSession(['current_unit_id' => $this->mi->id])
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Students')
+            ->assertDontSee('Classes')
+            ->assertDontSee('Categories');
+    }
+
     public function test_nav_shows_static_badge_for_non_super_admin(): void
     {
         $this->actingAs($this->operator)
@@ -127,6 +162,16 @@ class UnitSwitchTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee($this->mi->code);
+    }
+
+    public function test_nav_hides_master_finance_links_for_operator(): void
+    {
+        $this->actingAs($this->operator)
+            ->withSession(['current_unit_id' => $this->mi->id])
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Fee Types')
+            ->assertDontSee('Fee Matrix');
     }
 
     public function test_guest_cannot_switch_unit(): void

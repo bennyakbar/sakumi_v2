@@ -49,6 +49,8 @@ class UnitSeeder extends Seeder
                 'invoices',
                 'settlements',
                 'notifications',
+                'expense_fee_categories',
+                'expense_fee_subcategories',
             ];
 
             foreach ($scopedTables as $table) {
