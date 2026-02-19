@@ -253,6 +253,116 @@ npm run dev
 - `database/seeders/`: baseline and dummy test data
 - `scripts/switch-env.sh`: safety-first profile switching
 
+### Portable Transfer (Cross-OS)
+
+To transfer SAKUMI to another PC (Windows/macOS/Linux):
+
+1. Create a clean zip (excludes `node_modules`, `vendor`, `.git`):
+
+```bash
+zip -r sakumi_transfer.zip . -x "./node_modules/*" -x "./vendor/*" -x "./.git/*" -x "./storage/logs/*"
+```
+
+2. On the target PC with Docker Desktop installed:
+
+```powershell
+unzip sakumi_transfer.zip -d sakumi
+cd sakumi
+docker compose -f portable-transfer-kit-docker/docker-compose.yml up -d --build
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app composer install
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec node sh -lc "npm install && npm run build"
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan key:generate --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan migrate --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\UnitSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\RolePermissionSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\SettingsSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\FixedLoginSeeder --force
+```
+
+3. Access: `http://localhost:8080`
+
+### Cloud Deployment Guide
+
+Requirements:
+
+- VPS/Cloud server (DigitalOcean, AWS Lightsail, Hetzner, etc.)
+- Ubuntu 22.04/24.04, min 1GB RAM
+- Domain name pointed to server IP
+
+Server dependencies:
+
+- PHP 8.2+ (`pgsql`, `pdo_pgsql`, `mbstring`, `xml`, `zip`)
+- PostgreSQL 15/16
+- Nginx
+- Composer, Node.js 20+
+- Certbot (Let's Encrypt SSL)
+
+Deploy steps:
+
+```bash
+# 1. Clone repository
+git clone <repo-url> /var/www/sakumi
+cd /var/www/sakumi
+
+# 2. Install dependencies
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+
+# 3. Configure environment
+cp .env.real .env
+# Edit .env: set APP_URL, DB credentials, APP_ENV=production, APP_DEBUG=false
+php artisan key:generate
+
+# 4. Setup database
+php artisan migrate --force
+php artisan db:seed --class=UnitSeeder --force
+php artisan db:seed --class=RolePermissionSeeder --force
+php artisan db:seed --class=SettingsSeeder --force
+php artisan db:seed --class=FixedLoginSeeder --force
+
+# 5. Optimize
+php artisan optimize
+php artisan storage:link
+chown -R www-data:www-data storage bootstrap/cache
+
+# 6. Setup scheduler (add to crontab)
+# * * * * * php /var/www/sakumi/artisan schedule:run >> /dev/null 2>&1
+```
+
+Production `.env` example:
+
+```env
+APP_NAME="Sistem Keuangan MI"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+
+DB_SAKUMI_MODE=real
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_REAL_DATABASE=sakumi
+DB_REAL_USERNAME=sakumi
+DB_REAL_PASSWORD=<strong-password>
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+```
+
+Security checklist:
+
+- `APP_DEBUG=false`
+- Strong database password
+- SSL/HTTPS via Let's Encrypt
+- Firewall: only ports 22, 80, 443
+- Run `bash scripts/preflight-prod.sh` before deploy
+
+Preflight check:
+
+```bash
+bash scripts/preflight-prod.sh
+bash scripts/preflight-prod.sh --with-tests
+```
+
 ### Security and CI
 
 - OWASP ZAP baseline workflow: `.github/workflows/zap-baseline.yml`
@@ -514,6 +624,116 @@ npm run dev
 - `database/migrations/`: evolusi skema
 - `database/seeders/`: baseline data dan dummy testing
 - `scripts/switch-env.sh`: switching profil dengan guard keamanan
+
+### Transfer Portabel (Lintas OS)
+
+Untuk memindahkan SAKUMI ke PC lain (Windows/macOS/Linux):
+
+1. Buat zip bersih (tanpa `node_modules`, `vendor`, `.git`):
+
+```bash
+zip -r sakumi_transfer.zip . -x "./node_modules/*" -x "./vendor/*" -x "./.git/*" -x "./storage/logs/*"
+```
+
+2. Di PC tujuan yang sudah ada Docker Desktop:
+
+```powershell
+unzip sakumi_transfer.zip -d sakumi
+cd sakumi
+docker compose -f portable-transfer-kit-docker/docker-compose.yml up -d --build
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app composer install
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec node sh -lc "npm install && npm run build"
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan key:generate --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan migrate --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\UnitSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\RolePermissionSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\SettingsSeeder --force
+docker compose -f portable-transfer-kit-docker/docker-compose.yml exec app php artisan db:seed --class=Database\\Seeders\\FixedLoginSeeder --force
+```
+
+3. Akses: `http://localhost:8080`
+
+### Panduan Deploy ke Cloud
+
+Kebutuhan:
+
+- VPS/Cloud server (DigitalOcean, AWS Lightsail, Hetzner, dll)
+- Ubuntu 22.04/24.04, min 1GB RAM
+- Domain yang sudah diarahkan ke IP server
+
+Dependensi server:
+
+- PHP 8.2+ (`pgsql`, `pdo_pgsql`, `mbstring`, `xml`, `zip`)
+- PostgreSQL 15/16
+- Nginx
+- Composer, Node.js 20+
+- Certbot (SSL gratis Let's Encrypt)
+
+Langkah deploy:
+
+```bash
+# 1. Clone repository
+git clone <repo-url> /var/www/sakumi
+cd /var/www/sakumi
+
+# 2. Install dependensi
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+
+# 3. Konfigurasi environment
+cp .env.real .env
+# Edit .env: set APP_URL, kredensial DB, APP_ENV=production, APP_DEBUG=false
+php artisan key:generate
+
+# 4. Setup database
+php artisan migrate --force
+php artisan db:seed --class=UnitSeeder --force
+php artisan db:seed --class=RolePermissionSeeder --force
+php artisan db:seed --class=SettingsSeeder --force
+php artisan db:seed --class=FixedLoginSeeder --force
+
+# 5. Optimasi
+php artisan optimize
+php artisan storage:link
+chown -R www-data:www-data storage bootstrap/cache
+
+# 6. Setup scheduler (tambahkan ke crontab)
+# * * * * * php /var/www/sakumi/artisan schedule:run >> /dev/null 2>&1
+```
+
+Contoh `.env` production:
+
+```env
+APP_NAME="Sistem Keuangan MI"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://domain-anda.com
+
+DB_SAKUMI_MODE=real
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_REAL_DATABASE=sakumi
+DB_REAL_USERNAME=sakumi
+DB_REAL_PASSWORD=<password-kuat>
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+```
+
+Checklist keamanan:
+
+- `APP_DEBUG=false`
+- Password database yang kuat
+- SSL/HTTPS via Let's Encrypt
+- Firewall: hanya port 22, 80, 443
+- Jalankan `bash scripts/preflight-prod.sh` sebelum deploy
+
+Preflight check:
+
+```bash
+bash scripts/preflight-prod.sh
+bash scripts/preflight-prod.sh --with-tests
+```
 
 ### Keamanan dan CI
 
