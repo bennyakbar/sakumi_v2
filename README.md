@@ -119,7 +119,8 @@ Script behavior:
 - Validates `APP_ENV` and `DB_SAKUMI_MODE`
 - Requires typing `REAL` before switching to real
 - Clears Laravel config/cache
-- Auto-migrates and seeds dummy database when switching to dummy
+- **Switching to `real`**: auto-starts the Docker PostgreSQL container (`sakumi_db`) and runs migrations
+- **Switching to `dummy`**: auto-migrates and seeds the SQLite dummy database
 
 Real mode PostgreSQL example (`.env.real`):
 
@@ -388,7 +389,8 @@ Perilaku script:
 - Validasi `APP_ENV` dan `DB_SAKUMI_MODE`
 - Wajib ketik `REAL` saat pindah ke mode real
 - Membersihkan cache/config Laravel
-- Auto migrate + seed database dummy saat pindah ke dummy
+- **Pindah ke `real`**: otomatis start container Docker PostgreSQL (`sakumi_db`) dan jalankan migration
+- **Pindah ke `dummy`**: otomatis migrate + seed database SQLite dummy
 
 Contoh minimal mode real PostgreSQL (`.env.real`):
 

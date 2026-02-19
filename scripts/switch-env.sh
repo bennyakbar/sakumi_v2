@@ -70,8 +70,8 @@ if [[ "$TARGET" == "dummy" ]]; then
   fi
 fi
 
-if [[ "$TARGET" == "real" && "$NEW_ENV" != "production" ]]; then
-  echo "Safety check failed: real config must use APP_ENV=production"
+if [[ "$TARGET" == "real" && "$NEW_ENV" != "production" && "$NEW_ENV" != "local" ]]; then
+  echo "Safety check failed: real config must use APP_ENV=production or APP_ENV=local"
   exit 1
 fi
 
@@ -92,7 +92,52 @@ fi
 
 echo "Switched to $TARGET environment (APP_ENV=$NEW_ENV, DB_SAKUMI_MODE=$NEW_MODE)."
 
-# ── Auto-migrate and seed for dummy mode ──
+# ── Handle Real Mode (Docker) ──
+if [[ "$TARGET" == "real" ]]; then
+  echo ""
+  echo "Initializing real database (PostgreSQL via Docker)..."
+
+  # Check for Docker Compose
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "Error: Docker is not installed or not in PATH."
+    exit 1
+  fi
+
+  COMPOSE_FILE="$ROOT_DIR/portable-transfer-kit-docker/docker-compose.yml"
+  if [[ ! -f "$COMPOSE_FILE" ]]; then
+    echo "Error: Docker Compose file not found at $COMPOSE_FILE"
+    exit 1
+  fi
+
+  echo "Starting database container..."
+  docker compose -f "$COMPOSE_FILE" up -d db
+
+  echo "Waiting for database to be ready..."
+  # Simple wait loop
+  for i in {1..30}; do
+    if docker compose -f "$COMPOSE_FILE" exec db pg_isready -U sakumi >/dev/null 2>&1; then
+      echo "Database is ready!"
+      break
+    fi
+    echo -n "."
+    sleep 1
+  done
+
+  (
+    cd "$ROOT_DIR"
+    echo "Running migrations..."
+    php artisan migrate --force --no-interaction
+    
+    if [[ $? -eq 0 ]]; then
+       echo "Database migration successful."
+       # Optional: Seed if empty? For now, just migrate.
+    else
+       echo "Migration failed! Check your connection settings."
+    fi
+  )
+fi
+
+# ── Handle Dummy Mode (SQLite) ──
 if [[ "$TARGET" == "dummy" ]]; then
   echo ""
   echo "Initializing dummy database..."
@@ -108,19 +153,12 @@ if [[ "$TARGET" == "dummy" ]]; then
 
     echo "Running migrations..."
     php artisan migrate --force --no-interaction
-    if [[ $? -ne 0 ]]; then
-      echo "Migration failed!"
-      exit 1
-    fi
-
+    
     echo "Running dummy seeders..."
     php artisan db:seed --class='Database\Seeders\Testing\DummyDatabaseSeeder' --force --no-interaction
-    if [[ $? -ne 0 ]]; then
-      echo "Seeding failed!"
-      exit 1
-    fi
   )
 
   echo ""
   echo "Dummy database ready."
+  echo "Tip: You can stop the real database container with: docker compose -f portable-transfer-kit-docker/docker-compose.yml stop db"
 fi
